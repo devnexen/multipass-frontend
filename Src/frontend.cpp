@@ -123,7 +123,7 @@ static Function *PrintfFnc;
 static Function *StrerrorFnc;
 
 static int32_t randomStrLen;
-static std::unique_ptr<char> randomStr;
+static std::unique_ptr<char[]> randomStr;
 
 static cl::opt<string>
     NumIterations("iterations", cl::init("1024"),
@@ -1175,7 +1175,7 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
   Value *ChgPath = Builder.CreateCall(ChrootFnc, ChgPathCallArgs);
   if (Builder.CreateICmpEQ(ChgPath, Builder.getInt32(0))) {
     ChgPathCallArgs[0] = RootPath;
-    ChgPath = Builder.CreateCall(ChdirFnc, ChgPathCallArgs);
+    Builder.CreateCall(ChdirFnc, ChgPathCallArgs);
   }
 
   if (hasPledge) {
@@ -1624,7 +1624,8 @@ int main(int argc, char **argv) {
       isAndroid;
   float osVersion = 0.0f;
 
-  isLinux = isFreeBSD = isOpenBSD = isNetBSD = isDarwin = isAndroid = false;
+  isLinux = isFreeBSD = isOpenBSD = isNetBSD = isDragonFly = isDarwin =
+      isAndroid = false;
 
   if ((osNameStr = ::strstr(targetTripleStr, "linux")))
     isLinux = true;
@@ -1721,9 +1722,10 @@ int main(int argc, char **argv) {
   }
 
   Mod->setPIELevel(PIELevel::Small);
-  auto targetMachine = currentTarget->createTargetMachine(
-      targetTriple, targetCpu, targetFeatures, opt, relocModel, codeModel,
-      optLevel);
+  auto targetMachine =
+      unique_ptr<llvm::TargetMachine>(currentTarget->createTargetMachine(
+          targetTriple, targetCpu, targetFeatures, opt, relocModel, codeModel,
+          optLevel));
 
   hasMallocUsableSize = isLinux || isFreeBSD;
   hasClockGettime = !isDarwin;
@@ -1750,7 +1752,7 @@ int main(int argc, char **argv) {
   hasConsttimeMemequal = isNetBSD;
 
   randomStrLen = ::random() % 64;
-  randomStr = std::unique_ptr<char>(new char[randomStrLen + 1]);
+  randomStr = make_unique<char[]>(randomStrLen + 1);
   ::memset(randomStr.get(), 0, randomStrLen);
   for (auto x = 0; x < randomStrLen; x++)
     randomStr.get()[x] = (arc4random() % 68) + 48;
@@ -2003,9 +2005,7 @@ int main(int argc, char **argv) {
     errs() << "Could not write the IR file\n";
   }
 
-  compileObjectFile(targetMachine, "objs/operands.o");
-
-  delete targetMachine;
+  compileObjectFile(targetMachine.get(), "objs/operands.o");
 
   if (DisplayMod) {
     for (auto it = Mod->getFunctionList().begin();
