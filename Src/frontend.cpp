@@ -752,6 +752,15 @@ void addRandomnessBlock(IRBuilder<> Builder) {
   else
     MemsetFnc = Mod->getFunction("memset");
 
+  vector<Type *> SafeRandomArgs(2);
+  SafeRandomArgs[0] = Builder.getInt8PtrTy();
+  SafeRandomArgs[1] = Builder.getInt64Ty();
+  FunctionType *SafeRandomFt =
+      FunctionType::get(Builder.getVoidTy(), SafeRandomArgs, false);
+  Function *SafeRandomFnc = Function::Create(
+      SafeRandomFt, Function::ExternalLinkage, "safe_random", Mod);
+  SafeRandomFnc->setCallingConv(CallingConv::C);
+
   BasicBlock *Entry =
       BasicBlock::Create(Builder.getContext(), "entry", RandomFnc);
   Builder.SetInsertPoint(Entry);
@@ -878,6 +887,11 @@ void addRandomnessBlock(IRBuilder<> Builder) {
       EntryBuilder.CreateCall(SyscallFnc, SyscallCallArgs);
     }
   }
+
+  vector<Value *> SafeRandomCallArgs(2);
+  SafeRandomCallArgs[0] = ABuffer;
+  SafeRandomCallArgs[1] = ABufferLim;
+  EntryBuilder.CreateCall(SafeRandomFnc, SafeRandomCallArgs);
 
   EntryBuilder.CreateStore(ABuffer, LastBuffer);
   EntryBuilder.CreateStore(RandomRng, LastRandomValue);
