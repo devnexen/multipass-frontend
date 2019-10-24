@@ -1764,7 +1764,7 @@ int main(int argc, char **argv) {
   hasElfauxinfo = isFreeBSD;
   hasPthreadNameLinux = isLinux;
   hasPthreadNameBSD = isFreeBSD || isOpenBSD;
-  hasPthreadGetNameBSD = isFreeBSD && osVersion >= 12;
+  hasPthreadGetNameBSD = ((isFreeBSD && osVersion >= 12) || isOpenBSD);
   hasMapConceal = isOpenBSD;
   hasMapSuperpg = isFreeBSD;
   hasTimingsafeCmp = isFreeBSD | isOpenBSD;
@@ -1981,6 +1981,7 @@ int main(int argc, char **argv) {
   MemcmpRet =
       new GlobalVariable(*Mod, Builder.getInt32Ty(), false,
                          GlobalVariable::PrivateLinkage, Zero, "Memcmpret");
+
   BcmpRet = new GlobalVariable(*Mod, Builder.getInt32Ty(), false,
                                GlobalVariable::PrivateLinkage, Zero, "Bcmpret");
 
@@ -1991,6 +1992,7 @@ int main(int argc, char **argv) {
   PthreadSetnameRetCall = new GlobalVariable(*Mod, Builder.getInt32Ty(), false,
                                              GlobalVariable::PrivateLinkage,
                                              MinusOne, "PthreadSetnameretcall");
+
   Errno = new GlobalVariable(*Mod, Builder.getInt32Ty(), false,
                              GlobalVariable::ExternalLinkage, Zero, "errno");
 
