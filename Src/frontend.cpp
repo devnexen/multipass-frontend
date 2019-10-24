@@ -1046,9 +1046,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
 
       EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
 
-      Value *NameStackPtr = Builder.CreateLoad(NameStack);
-
-      EntryBuilder.CreateStore(NameStackPtr, GThreadName);
+      EntryBuilder.CreateStore(NameStack, GThreadName);
     }
   } else {
     EntryBuilder.CreateStore(ThreadName, GThreadName);
