@@ -21,4 +21,14 @@ int safe_bcmp(const void *a, const void *b, size_t l) {
 
   return delta;
 }
+
+void safe_random(void *buf, size_t len) {
+#if defined(__linux__)
+  ssize_t written = getrandom(buf, len, 0);
+  (void)written;
+  assert(written == len);
+#else
+  arc4random_buf(buf, len);
+#endif
+}
 }
