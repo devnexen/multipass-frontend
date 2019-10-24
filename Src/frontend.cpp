@@ -340,8 +340,10 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   vector<Type *> SafeBzeroArgs(2);
   SafeBzeroArgs[0] = MemsetArgs[0];
   SafeBzeroArgs[1] = MemsetArgs[2];
-  FunctionType *SafeBzeroFt = FunctionType::get(Builder.getVoidTy(), SafeBzeroArgs, false);
-  Function *SafeBzeroFnc = Function::Create(SafeBzeroFt, Function::ExternalLinkage, "safe_bzero", Mod);
+  FunctionType *SafeBzeroFt =
+      FunctionType::get(Builder.getVoidTy(), SafeBzeroArgs, false);
+  Function *SafeBzeroFnc = Function::Create(
+      SafeBzeroFt, Function::ExternalLinkage, "safe_bzero", Mod);
   SafeBzeroFnc->setCallingConv(CallingConv::C);
 
   vector<Type *> MemcmpArgs(3);
@@ -370,7 +372,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     BcmpFnc = MemcmpFnc;
   }
 
-  SafeBcmpFnc = Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
+  SafeBcmpFnc =
+      Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
 
   MemcmpFnc->setCallingConv(CallingConv::C);
   BcmpFnc->setCallingConv(CallingConv::C);
@@ -577,7 +580,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   EntryBuilder.CreateStore(MemcmpPtrs, MemcmpRet);
   EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);
 
-  EntryBuilder.CreateCall(SafeBcmpFnc, MemcmpCallArgs); 
+  EntryBuilder.CreateCall(SafeBcmpFnc, MemcmpCallArgs);
 
   FreeCallArgs[0] = NPtr;
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
@@ -1669,12 +1672,8 @@ int main(int argc, char **argv) {
     osVersion = ::strtof(versionStr, nullptr);
   }
 
-  Optional<Reloc::Model> relocModel;
-
-  if (isOpenBSD)
-    relocModel = Optional<Reloc::Model>(Reloc::Model::PIC_);
-  else
-    relocModel = Optional<Reloc::Model>(Reloc::Model::Static);
+  Optional<Reloc::Model> relocModel =
+      Optional<Reloc::Model>(Reloc::Model::PIC_);
   int16_t optlevel = static_cast<int16_t>(::strtol(OptLevel.c_str(), 0, 10));
   int16_t codemodel = static_cast<int16_t>(::strtol(CodeLvl.c_str(), 0, 10));
   if (optlevel < 0)
