@@ -37,7 +37,8 @@ endif
 endif
 
 exec: operands.o
-	$(CC) $(OFLAGS) -o bins/operands objs/operands.o -pthread $(OLIBS)
+	$(CXX) $(OFLAGS) -fPIC -I Src -o objs/libs.o -c Src/libs.cpp
+	$(CC) $(OFLAGS) -o bins/operands objs/operands.o objs/libs.o -pthread $(OLIBS)
 operands.o: mpass
 	bins/mpass $(MPASSFLAGS)
 mpass:  dirs

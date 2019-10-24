@@ -337,6 +337,13 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     ExplicitMemsetFnc->setCallingConv(CallingConv::C);
   }
 
+  vector<Type *> SafeBzeroArgs(2);
+  SafeBzeroArgs[0] = MemsetArgs[0];
+  SafeBzeroArgs[1] = MemsetArgs[2];
+  FunctionType *SafeBzeroFt = FunctionType::get(Builder.getVoidTy(), SafeBzeroArgs, false);
+  Function *SafeBzeroFnc = Function::Create(SafeBzeroFt, Function::ExternalLinkage, "safe_bzero", Mod);
+  SafeBzeroFnc->setCallingConv(CallingConv::C);
+
   vector<Type *> MemcmpArgs(3);
   MemcmpArgs[0] = Builder.getInt8PtrTy();
   MemcmpArgs[1] = Builder.getInt8PtrTy();
@@ -345,6 +352,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
       FunctionType::get(Builder.getInt32Ty(), MemcmpArgs, false);
   Function *MemcmpFnc = nullptr;
   Function *BcmpFnc = nullptr;
+  Function *SafeBcmpFnc = nullptr;
 
   if (!hasTimingsafeCmp && !hasConsttimeMemequal) {
     MemcmpFnc =
@@ -362,8 +370,11 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     BcmpFnc = MemcmpFnc;
   }
 
+  SafeBcmpFnc = Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
+
   MemcmpFnc->setCallingConv(CallingConv::C);
   BcmpFnc->setCallingConv(CallingConv::C);
+  SafeBcmpFnc->setCallingConv(CallingConv::C);
 
   vector<Type *> MallocArgs(1);
   MallocArgs[0] = Builder.getInt64Ty();
@@ -566,6 +577,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   EntryBuilder.CreateStore(MemcmpPtrs, MemcmpRet);
   EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);
 
+  EntryBuilder.CreateCall(SafeBcmpFnc, MemcmpCallArgs); 
+
   FreeCallArgs[0] = NPtr;
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
   FreeCallArgs[0] = Ptr;
@@ -764,6 +777,13 @@ void addRandomnessBlock(IRBuilder<> Builder) {
   }
 
   EntryBuilder.CreateCall(MemsetFnc, MemsetCallArgs);
+
+  MemsetFnc = Mod->getFunction("safe_bzero");
+  vector<Value *> SafeBzeroCallArgs(2);
+  SafeBzeroCallArgs[0] = ABuffer;
+  SafeBzeroCallArgs[1] = ABufferSize;
+
+  EntryBuilder.CreateCall(MemsetFnc, SafeBzeroCallArgs);
 
   if (hasArc4random) {
     FunctionType *Arc4randomFt =
