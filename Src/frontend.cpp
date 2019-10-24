@@ -904,8 +904,9 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     printReport(EntryBuilder, TestFnc);
 
   Value *NameStackLim = EntryBuilder.getInt64(16);
-  AllocaInst *NameStack = EntryBuilder.CreateAlloca(EntryBuilder.getInt8Ty(),
+  AllocaInst *NameStack = EntryBuilder.CreateAlloca(EntryBuilder.getInt8PtrTy(),
                                                     NameStackLim, "Namestack");
+  Value *NameStackPtr = EntryBuilder.CreateLoad(NameStack);
 
   vector<Type *> PthreadCreateArgs(4);
   PthreadCreateArgs[0] =
@@ -931,7 +932,6 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
 
   AllocaInst *APtd = EntryBuilder.CreateAlloca(
       PointerType::getUnqual(PthreadType), nullptr, "Aptd");
-  APtd->setAlignment(8);
 
   vector<Value *> PthreadCreateCallArgs(4);
   PthreadCreateCallArgs[0] = APtd;
@@ -985,7 +985,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     PthreadGetnameNpCallArgs[2] = NameStackLim;
 
     EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
-    EntryBuilder.CreateStore(NameStack, GThreadName);
+    EntryBuilder.CreateStore(NameStackPtr, GThreadName);
   } else if (hasPthreadNameBSD) {
     vector<Type *> PthreadSetnameNpArgs(2);
     PthreadSetnameNpArgs[0] = PointerType::getUnqual(PthreadType);
@@ -1024,7 +1024,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
       PthreadGetnameNpCallArgs[2] = NameStackLim;
 
       EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
-      EntryBuilder.CreateStore(NameStack, GThreadName);
+      EntryBuilder.CreateStore(NameStackPtr, GThreadName);
     }
   } else {
     EntryBuilder.CreateStore(ThreadName, GThreadName);
