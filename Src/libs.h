@@ -4,6 +4,7 @@
 #include <sys/random.h>
 #else
 #include <unistd.h>
+#include <stdlib.h>
 #endif
 
 extern "C" {

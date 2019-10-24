@@ -932,6 +932,15 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
   Function *PthreadCreateFnc = Function::Create(
       PthreadCreateFt, Function::ExternalLinkage, "pthread_create", Mod);
   PthreadCreateFnc->setCallingConv(CallingConv::C);
+  vector<Type *> emptyArgs(0);
+  vector<Value *> emptyCallArgs(0);
+  FunctionType *PthreadSelfFt =
+      FunctionType::get(PthreadType, emptyArgs, false);
+  Function *PthreadSelfFnc = Function::Create(
+      PthreadSelfFt, Function::ExternalLinkage, "pthread_self", Mod);
+  PthreadSelfFnc->setCallingConv(CallingConv::C);
+
+  Value *Self = EntryBuilder.CreateCall(PthreadSelfFnc, emptyCallArgs);
 
   vector<Type *> PthreadJoinArgs(2);
   PthreadJoinArgs[0] = PointerType::getUnqual(PthreadType);
@@ -984,7 +993,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     PthreadGetnameNpFnc->setCallingConv(CallingConv::C);
 
     vector<Value *> PthreadSetnameNpCallArgs(2);
-    PthreadSetnameNpCallArgs[0] = Ptd;
+    PthreadSetnameNpCallArgs[0] = Self;
     PthreadSetnameNpCallArgs[1] = ThreadName;
 
     Ret =
@@ -992,7 +1001,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     EntryBuilder.CreateStore(Ret, PthreadSetnameRetCall);
 
     vector<Value *> PthreadGetnameNpCallArgs(3);
-    PthreadGetnameNpCallArgs[0] = Ptd;
+    PthreadGetnameNpCallArgs[0] = Self;
     PthreadGetnameNpCallArgs[1] = NameStack;
     PthreadGetnameNpCallArgs[2] = NameStackLim;
 
@@ -1016,7 +1025,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     PthreadGetnameNpArgs[2] = Builder.getInt64Ty();
 
     vector<Value *> PthreadSetnameNpCallArgs(2);
-    PthreadSetnameNpCallArgs[0] = Ptd;
+    PthreadSetnameNpCallArgs[0] = Self;
     PthreadSetnameNpCallArgs[1] = ThreadName;
 
     EntryBuilder.CreateCall(PthreadSetnameNpFnc, PthreadSetnameNpCallArgs);
@@ -1031,7 +1040,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
       PthreadGetnameNpFnc->setCallingConv(CallingConv::C);
 
       vector<Value *> PthreadGetnameNpCallArgs(3);
-      PthreadGetnameNpCallArgs[0] = Ptd;
+      PthreadGetnameNpCallArgs[0] = Self;
       PthreadGetnameNpCallArgs[1] = NameStack;
       PthreadGetnameNpCallArgs[2] = NameStackLim;
 
