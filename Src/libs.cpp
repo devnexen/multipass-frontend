@@ -34,6 +34,7 @@ void safe_random(void *buf, size_t len) {
 
 int safe_proc_maps(pid_t pid) {
   int ret = -1;
+  int index = 0;
   if (pid == -1)
     pid = getpid();
 #if defined(__linux__)
@@ -43,7 +44,6 @@ int safe_proc_maps(pid_t pid) {
   FILE *fp = fopen(path, "r");
   if (fp) {
     char buf[256];
-    int index = 0;
     while ((fgets(buf, sizeof(buf), fp))) {
       uintptr_t s;
       uintptr_t e;
@@ -66,6 +66,49 @@ int safe_proc_maps(pid_t pid) {
     }
     ret = 0;
     fclose(fp);
+  }
+#elif defined(__FreeBSD__)
+  int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_VMMAP, pid};
+  size_t miblen = sizeof(mib) / sizeof(mib[0]);
+  size_t len;
+  char *b, *s, *e;
+
+  if (sysctl(mib, miblen, nullptr, &len, nullptr, 0) == -1)
+    return -1;
+  len = len * 4 / 3;
+  b = reinterpret_cast<char *>(
+      mmap(nullptr, len, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0));
+  if (b != (void *)-1) {
+    if (sysctl(mib, miblen, b, &len, nullptr, 0) == -1) {
+      munmap(b, len);
+      return -1;
+    }
+
+    s = b;
+    e = s + len;
+
+    while (s < e) {
+      struct kinfo_vmentry *e = (struct kinfo_vmentry *)s;
+      size_t sz = e->kve_structsize;
+
+      if (sz == 0)
+        break;
+
+      int64_t f = 0;
+      memcpy(&pmap[index].s, &e->kve_start, sizeof(pmap[index].s));
+      memcpy(&pmap[index].e, &e->kve_end, sizeof(pmap[index].e));
+      if (e->kve_protection & KVME_PROT_READ)
+        f |= KVME_PROT_READ;
+      if (e->kve_protection & KVME_PROT_WRITE)
+        f |= KVME_PROT_WRITE;
+      memcpy(&pmap[index].f, &f, sizeof(pmap[index].f));
+      index++;
+
+      s += sz;
+    }
+
+    ret = 0;
+    munmap(b, len);
   }
 #endif
   return ret;

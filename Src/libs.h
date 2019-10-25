@@ -4,8 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/mman.h>
 #if defined(__linux__)
+#include <linux/mman.h>
 #include <sys/random.h>
+#elif defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <sys/user.h>
 #endif
 
 extern "C" {

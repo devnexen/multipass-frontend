@@ -1054,12 +1054,11 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
       PthreadGetnameNpFnc->setCallingConv(CallingConv::C);
 
       vector<Value *> PthreadGetnameNpCallArgs(3);
-      PthreadGetnameNpCallArgs[0] = Self;
+      PthreadGetnameNpCallArgs[0] = Ptd;
       PthreadGetnameNpCallArgs[1] = NameStack;
       PthreadGetnameNpCallArgs[2] = NameStackLim;
 
       EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
-
       EntryBuilder.CreateStore(NameStack, GThreadName);
     }
   } else {
