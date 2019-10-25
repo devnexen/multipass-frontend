@@ -33,6 +33,6 @@ __thread struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
 void safe_bzero(void *, size_t);
 int safe_bcmp(const void *, const void *, size_t);
-void safe_random(void *, size_t);
+int safe_random(void *, size_t);
 int safe_proc_maps(pid_t);
 }

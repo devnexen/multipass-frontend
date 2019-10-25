@@ -1,9 +1,25 @@
 #include "libs.h"
 #include <assert.h>
 
+void testCond(bool cond) {
+	assert(cond);
+	fprintf(stderr, "Test passed\n");
+}
+
 int main(int argc, char **argv) {
-  int ret = safe_proc_maps(-1);
-  assert(ret != -1);
+  int ret = -1;
+  char p[10];
+  char buf[256];
+  safe_bzero(p, sizeof(p));
+  testCond(p[0] == 0);
+  ret = safe_random(buf, sizeof(buf));
+  testCond(ret == 0);
+  ret = safe_bcmp("a", "a", 1);
+  testCond(ret == 0);
+  ret = safe_bcmp("a", "b", 1);
+  testCond(ret != 0);
+  ret = safe_proc_maps(-1);
+  testCond(ret != -1);
   int index = 0;
 
   while (pmap[index].s != 0) {
