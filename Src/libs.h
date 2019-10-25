@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/mman.h>
 #if defined(__linux__)
 #include <linux/mman.h>

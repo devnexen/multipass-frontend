@@ -2,8 +2,12 @@
 #include <assert.h>
 
 void testCond(bool cond) {
-	assert(cond);
-	fprintf(stderr, "Test passed\n");
+  if (errno == ENOSYS) {
+    fprintf(stderr, "Not implemented\n");
+  } else {
+    assert(cond);
+    fprintf(stderr, "Test passed\n");
+  }
 }
 
 int main(int argc, char **argv) {
@@ -18,13 +22,16 @@ int main(int argc, char **argv) {
   testCond(ret == 0);
   ret = safe_bcmp("a", "b", 1);
   testCond(ret != 0);
+  ret = 0;
   ret = safe_proc_maps(-1);
   testCond(ret != -1);
   int index = 0;
 
   while (pmap[index].s != 0) {
-    fprintf(stderr, "%p-%p %" PRIu64 " - huge ? %d (%ld)\n", reinterpret_cast<void *>(pmap[index].s),
-            reinterpret_cast<void *>(pmap[index].e), pmap[index].sz, pmap[index].hgmp, pmap[index].f);
+    fprintf(stderr, "%p-%p %" PRIu64 " - huge ? %d (%ld)\n",
+            reinterpret_cast<void *>(pmap[index].s),
+            reinterpret_cast<void *>(pmap[index].e), pmap[index].sz,
+            pmap[index].hgmp, pmap[index].f);
     ++index;
   }
 

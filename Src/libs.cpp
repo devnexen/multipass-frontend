@@ -37,6 +37,8 @@ int safe_random(void *buf, size_t len) {
 int safe_proc_maps(pid_t pid) {
   int ret = -1;
   int index = 0;
+  int saved_err = errno;
+  errno = 0;
   if (pid == -1)
     pid = getpid();
 #if defined(__linux__)
@@ -119,7 +121,11 @@ int safe_proc_maps(pid_t pid) {
     ret = 0;
     munmap(b, len);
   }
+#else
+  errno = ENOSYS;
+  return 0;
 #endif
+  errno = saved_err;
   return ret;
 }
 }
