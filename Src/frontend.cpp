@@ -355,6 +355,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   Function *MemcmpFnc = nullptr;
   Function *BcmpFnc = nullptr;
   Function *SafeBcmpFnc = nullptr;
+  Function *SafeProcmapsFnc = nullptr;
 
   if (!hasTimingsafeCmp && !hasConsttimeMemequal) {
     MemcmpFnc =
@@ -372,12 +373,20 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     BcmpFnc = MemcmpFnc;
   }
 
+  MemcmpFnc->setCallingConv(CallingConv::C);
+  BcmpFnc->setCallingConv(CallingConv::C);
   SafeBcmpFnc =
       Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
 
-  MemcmpFnc->setCallingConv(CallingConv::C);
-  BcmpFnc->setCallingConv(CallingConv::C);
   SafeBcmpFnc->setCallingConv(CallingConv::C);
+
+  vector<Type *> SafeProcmapsArgs(1);
+  SafeProcmapsArgs[0] = Builder.getInt32Ty();
+  FunctionType *SafeProcmapsFt =
+      FunctionType::get(Builder.getInt32Ty(), SafeProcmapsArgs, false);
+  SafeProcmapsFnc = Function::Create(SafeProcmapsFt, Function::ExternalLinkage,
+                                     "safe_proc_maps", Mod);
+  SafeProcmapsFnc->setCallingConv(CallingConv::C);
 
   vector<Type *> MallocArgs(1);
   MallocArgs[0] = Builder.getInt64Ty();
@@ -581,6 +590,11 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);
 
   EntryBuilder.CreateCall(SafeBcmpFnc, MemcmpCallArgs);
+
+  vector<Value *> SafeProcmapsCallArgs(1);
+  SafeProcmapsCallArgs[0] = Builder.getInt32(-1);
+
+  EntryBuilder.CreateCall(SafeProcmapsFnc, SafeProcmapsCallArgs);
 
   FreeCallArgs[0] = NPtr;
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);

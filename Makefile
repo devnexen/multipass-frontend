@@ -7,6 +7,7 @@ CMODEL=2
 OFLAGS=-g -O$(OLEVEL)
 OLIBS=
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
+ILIBS = -L objs -Wl,-rpath,objs -llibs
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
 BREWBASE=/usr/local/Cellar/llvm
@@ -36,9 +37,12 @@ LIBS= -lbsd
 endif
 endif
 
+testsLib: exec
+	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
+
 exec: operands.o
-	$(CXX) $(OFLAGS) -Wall  -fPIC -I Src -o objs/libs.o -c Src/libs.cpp
-	$(CC) $(OFLAGS) -o bins/operands objs/operands.o objs/libs.o -pthread $(OLIBS)
+	$(CXX) $(OFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp
+	$(CC) $(OFLAGS) -o bins/operands objs/operands.o -pthread $(OLIBS) $(ILIBS)
 operands.o: mpass
 	bins/mpass $(MPASSFLAGS)
 mpass:  dirs
