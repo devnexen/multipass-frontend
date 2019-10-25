@@ -68,6 +68,7 @@ static StructType *TimespecType;
 static StructType *TimevalType;
 static StructType *PthreadType;
 static StructType *PthreadAttrType;
+static StructType *PProcMapType;
 static LoadInst *StartFMbr;
 static LoadInst *StartSMbr;
 static LoadInst *EndFMbr;
@@ -595,6 +596,9 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   SafeProcmapsCallArgs[0] = Builder.getInt32(-1);
 
   EntryBuilder.CreateCall(SafeProcmapsFnc, SafeProcmapsCallArgs);
+
+  AllocaInst *ProcMaps =
+      EntryBuilder.CreateAlloca(PProcMapType, nullptr, "Procmaps");
 
   FreeCallArgs[0] = NPtr;
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
@@ -1826,6 +1830,17 @@ int main(int argc, char **argv) {
   PthreadType = StructType::create(Builder.getContext(), "struct.pthread");
   PthreadAttrType =
       StructType::create(Builder.getContext(), "struct.pthread_attr");
+
+  vector<Type *> PProcMapMembers(7);
+  PProcMapMembers[0] = PointerType::getInt8Ty(Builder.getContext());
+  PProcMapMembers[1] = PointerType::getInt8Ty(Builder.getContext());
+  PProcMapMembers[2] = IntegerType::getInt64Ty(Builder.getContext());
+  PProcMapMembers[3] = IntegerType::getInt32Ty(Builder.getContext());
+  PProcMapMembers[4] = IntegerType::getInt32Ty(Builder.getContext());
+  PProcMapMembers[5] = IntegerType::getInt64Ty(Builder.getContext());
+  PProcMapMembers[6] = PointerType::getInt8PtrTy(Builder.getContext());
+  PProcMapType = StructType::create(Builder.getContext(), "struct.p_proc_map");
+  PProcMapType->setBody(PProcMapMembers);
 
   Mod->setDataLayout(targetMachine->createDataLayout());
   Mod->setTargetTriple(targetTriple);
