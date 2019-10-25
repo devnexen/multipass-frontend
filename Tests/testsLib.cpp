@@ -7,8 +7,8 @@ int main(int argc, char **argv) {
   int index = 0;
 
   while (pmap[index].s != 0) {
-    fprintf(stderr, "%p-%p (%ld)\n", reinterpret_cast<void *>(pmap[index].s),
-            reinterpret_cast<void *>(pmap[index].e), pmap[index].f);
+    fprintf(stderr, "%p-%p %" PRIu64 " - huge ? %d (%ld)\n", reinterpret_cast<void *>(pmap[index].s),
+            reinterpret_cast<void *>(pmap[index].e), pmap[index].sz, pmap[index].hgmp, pmap[index].f);
     ++index;
   }
 

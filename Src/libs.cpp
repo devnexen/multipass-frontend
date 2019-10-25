@@ -55,12 +55,14 @@ int safe_proc_maps(pid_t pid) {
         int64_t f = 0;
         f |= static_cast<int>(flag[0]);
         f |= static_cast<int>(flag[1]);
+        size_t tsz = (e - s);
         memcpy(&pmap[index].s, &s, sizeof(s));
         memcpy(&pmap[index].e, &e, sizeof(e));
         memcpy(&pmap[index].f, &f, sizeof(f));
+        memcpy(&pmap[index].sz, &tsz, sizeof(tsz));
+        pmap[index].hgmp = (tsz >= HUGE_MAP_SZ);
         index++;
       } else {
-        pmap[index] = {0, 0};
         break;
       }
     }
@@ -95,13 +97,18 @@ int safe_proc_maps(pid_t pid) {
         break;
 
       int64_t f = 0;
-      memcpy(&pmap[index].s, &e->kve_start, sizeof(pmap[index].s));
-      memcpy(&pmap[index].e, &e->kve_end, sizeof(pmap[index].e));
       if (e->kve_protection & KVME_PROT_READ)
         f |= KVME_PROT_READ;
       if (e->kve_protection & KVME_PROT_WRITE)
         f |= KVME_PROT_WRITE;
+      if (e->kve_protection & KVME_PROT_EXEC)
+        f |= KVME_PROT_EXEC;
+      size_t tsz = (e->kve_end - e->kve_start);
+      memcpy(&pmap[index].s, &e->kve_start, sizeof(pmap[index].s));
+      memcpy(&pmap[index].e, &e->kve_end, sizeof(pmap[index].e));
       memcpy(&pmap[index].f, &f, sizeof(pmap[index].f));
+      memcpy(&pmap[index].sz, &tsz, sizeof(pmap[index].sz));
+      pmap[index].hgmp = (tsz >= HUGE_MAP_SZ);
       index++;
 
       s += sz;
