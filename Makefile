@@ -1,7 +1,10 @@
 PLATFORM=$(shell uname -s)
 
+LLVMCFG=llvm-config
 CXXFLAGS=`$(LLVMCFG) --cxxflags`
 LDFLAGS=`$(LLVMCFG) --ldflags --libs`
+CC=`$(LLVMCFG) --bindir`/clang
+CXX=`$(LLVMCFG) --bindir`/clang++
 OLEVEL=0
 CMODEL=2
 OFLAGS=-g -O$(OLEVEL)
@@ -10,16 +13,9 @@ MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
-BREWBASE=/usr/local/Cellar/llvm
 VERSION=6.0.0
-CC=${BREWBASE}/${VERSION}/bin/clang
-CXX=${BREWBASE}/${VERSION}/bin/clang++
-LLVMCFG=${BREWBASE}/${VERSION}/bin/llvm-config
 LIBS=-lncurses
 else
-CC=clang
-CXX=clang++
-LLVMCFG=llvm-config
 ifeq (,$(findstring $(PLATFORM), NetBSD))
 ifeq (,$(findstring $(PLATFORM), DragonFly))
 LIBS=-lncurses

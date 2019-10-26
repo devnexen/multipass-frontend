@@ -938,6 +938,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
   Value *NameStackLim = EntryBuilder.getInt64(16);
   AllocaInst *NameStack = EntryBuilder.CreateAlloca(EntryBuilder.getInt8PtrTy(),
                                                     NameStackLim, "Namestack");
+  Value *NameStackPtr = EntryBuilder.CreateLoad(NameStack);
   vector<Type *> PthreadCreateArgs(4);
   PthreadCreateArgs[0] =
       PointerType::get(PointerType::getUnqual(PthreadType), 0);
@@ -1011,7 +1012,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     PthreadGetnameNpFnc->setCallingConv(CallingConv::C);
 
     vector<Value *> PthreadSetnameNpCallArgs(2);
-    PthreadSetnameNpCallArgs[0] = Self;
+    PthreadSetnameNpCallArgs[0] = Ptd;
     PthreadSetnameNpCallArgs[1] = ThreadName;
 
     Ret =
@@ -1019,12 +1020,12 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     EntryBuilder.CreateStore(Ret, PthreadSetnameRetCall);
 
     vector<Value *> PthreadGetnameNpCallArgs(3);
-    PthreadGetnameNpCallArgs[0] = Self;
+    PthreadGetnameNpCallArgs[0] = Ptd;
     PthreadGetnameNpCallArgs[1] = NameStack;
     PthreadGetnameNpCallArgs[2] = NameStackLim;
 
     EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
-    EntryBuilder.CreateStore(NameStack, GThreadName);
+    EntryBuilder.CreateStore(NameStackPtr, GThreadName);
   } else if (hasPthreadNameBSD) {
     vector<Type *> PthreadSetnameNpArgs(2);
     PthreadSetnameNpArgs[0] = PointerType::getUnqual(PthreadType);
@@ -1043,7 +1044,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
     PthreadGetnameNpArgs[2] = Builder.getInt64Ty();
 
     vector<Value *> PthreadSetnameNpCallArgs(2);
-    PthreadSetnameNpCallArgs[0] = Self;
+    PthreadSetnameNpCallArgs[0] = Ptd;
     PthreadSetnameNpCallArgs[1] = ThreadName;
 
     EntryBuilder.CreateCall(PthreadSetnameNpFnc, PthreadSetnameNpCallArgs);
@@ -1063,7 +1064,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
       PthreadGetnameNpCallArgs[2] = NameStackLim;
 
       EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
-      EntryBuilder.CreateStore(NameStack, GThreadName);
+      EntryBuilder.CreateStore(NameStackPtr, GThreadName);
     }
   } else {
     EntryBuilder.CreateStore(ThreadName, GThreadName);
