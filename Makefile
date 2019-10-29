@@ -42,7 +42,7 @@ exec: operands.o
 operands.o: mpass
 	bins/mpass $(MPASSFLAGS)
 mpass:  dirs
-	$(CXX) $(CXXFLAGS) -lz -pthread $(OFLAGS) -o bins/mpass Src/frontend.cpp $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -std=c++14 -lz -pthread $(OFLAGS) -o bins/mpass Src/frontend.cpp $(LDFLAGS) $(LIBS)
 
 dirs:
 	mkdir -p bins

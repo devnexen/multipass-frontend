@@ -1811,7 +1811,7 @@ int main(int argc, char **argv) {
   hasConsttimeMemequal = isNetBSD;
 
   randomStrLen = ::random() % 64;
-  randomStr = make_unique<char[]>(randomStrLen + 1);
+  randomStr = std::make_unique<char[]>(randomStrLen + 1);
   ::memset(randomStr.get(), 0, randomStrLen);
   for (auto x = 0; x < randomStrLen; x++)
     randomStr.get()[x] = (arc4random() % 68) + 48;
