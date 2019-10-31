@@ -1,7 +1,8 @@
 #include "libs.h"
 #include <assert.h>
 
-void testCond(bool cond) {
+void testCond(const char *name, bool cond) {
+  fprintf(stderr, "%s: ", name);
   if (errno == ENOSYS) {
     fprintf(stderr, "Not implemented\n");
   } else {
@@ -14,17 +15,22 @@ int main(int argc, char **argv) {
   int ret = -1;
   char p[10];
   char buf[256];
+  void *ptr;
   safe_bzero(p, sizeof(p));
-  testCond(p[0] == 0);
+  testCond("safe_bzero", p[0] == 0);
   ret = safe_random(buf, sizeof(buf));
-  testCond(ret == 0);
+  testCond("safe_random", ret == 0);
   ret = safe_bcmp("a", "a", 1);
-  testCond(ret == 0);
+  testCond("safe_bcmp", ret == 0);
   ret = safe_bcmp("a", "b", 1);
-  testCond(ret != 0);
+  testCond("safe_bcmp", ret != 0);
   ret = 0;
   ret = safe_proc_maps(-1);
-  testCond(ret != -1);
+  testCond("safe_proc_maps", ret != -1);
+  ret = safe_alloc(&ptr, 4096, 16);
+  testCond("safe_alloc", ret == 0);
+  ret = safe_free(ptr);
+  testCond("safe_free", ret == 0);
   int index = 0;
 
   while (pmap[index].s != 0) {

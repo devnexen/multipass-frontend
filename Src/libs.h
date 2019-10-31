@@ -29,6 +29,10 @@ struct p_proc_map {
 
 const size_t PROC_MAP_MAX = 256;
 const size_t HUGE_MAP_SZ = 2 * 1024 * 1024;
+#if defined(USE_MMAP)
+const int32_t canary = 0x3aff5d;
+const size_t szl = sizeof(size_t);
+#endif
 
 __thread struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
@@ -36,4 +40,6 @@ void safe_bzero(void *, size_t);
 int safe_bcmp(const void *, const void *, size_t);
 int safe_random(void *, size_t);
 int safe_proc_maps(pid_t);
+int safe_alloc(void **, size_t, size_t);
+int safe_free(void *);
 }
