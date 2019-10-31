@@ -792,6 +792,8 @@ void addRandomnessBlock(IRBuilder<> Builder) {
   Value *ABufferLim = EntryBuilder.CreateSub(ABufferSize, One);
   AllocaInst *ABuffer =
       Builder.CreateAlloca(Builder.getInt8Ty(), ABufferSize, "Abuffer");
+  ABuffer->setMetadata(Mod->getMDKindID("nosanitize"),
+                       MDNode::get(EntryBuilder.getContext(), None));
 
   vector<Value *> MemsetCallArgs;
 
@@ -842,8 +844,6 @@ void addRandomnessBlock(IRBuilder<> Builder) {
 
       EntryBuilder.CreateCall(GetentropyFnc, GetentropyCallArgs);
     } else {
-      ABuffer->setMetadata(Mod->getMDKindID("nosanitize"),
-                           MDNode::get(EntryBuilder.getContext(), None));
       vector<Type *> Arc4randombufArgs(2);
       Arc4randombufArgs[0] = PointerType::get(Builder.getInt8Ty(), 0);
       Arc4randombufArgs[1] = Builder.getInt64Ty();
