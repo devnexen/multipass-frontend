@@ -842,6 +842,8 @@ void addRandomnessBlock(IRBuilder<> Builder) {
 
       EntryBuilder.CreateCall(GetentropyFnc, GetentropyCallArgs);
     } else {
+      ABuffer->setMetadata(Mod->getMDKindID("nosanitize"),
+                           MDNode::get(EntryBuilder.getContext(), None));
       vector<Type *> Arc4randombufArgs(2);
       Arc4randombufArgs[0] = PointerType::get(Builder.getInt8Ty(), 0);
       Arc4randombufArgs[1] = Builder.getInt64Ty();
@@ -902,8 +904,12 @@ void addRandomnessBlock(IRBuilder<> Builder) {
       SyscallCallArgs[2] = ABufferLim;
       SyscallCallArgs[3] = Builder.CreateLoad(SyscallGetrandomMod);
 
-      EntryBuilder.CreateCall(SyscallFnc, SyscallCallArgs);
+      RetGet = EntryBuilder.CreateCall(SyscallFnc, SyscallCallArgs);
     }
+
+    if (RetGet)
+      RetGet->setMetadata(Mod->getMDKindID("nosanitize"),
+                          MDNode::get(EntryBuilder.getContext(), None));
   }
 
   vector<Value *> SafeRandomCallArgs(2);
@@ -1314,8 +1320,12 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
     ClockGettime->setCallingConv(CallingConv::C);
 
     AStart = Builder.CreateAlloca(TimespecType, nullptr, "Astart");
+    AStart->setMetadata(Mod->getMDKindID("nosanitize"),
+                        MDNode::get(Builder.getContext(), None));
     AStart->setAlignment(8);
     AEnd = Builder.CreateAlloca(TimespecType, nullptr, "Aend");
+    AEnd->setMetadata(Mod->getMDKindID("nosanitize"),
+                      MDNode::get(Builder.getContext(), None));
     AEnd->setAlignment(8);
 
     TimeArgs[0] = Builder.CreateLoad(ClockMonotonic);
@@ -1344,6 +1354,8 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
     CStartInst = Builder.CreateCall(Gettimeofday, TimeArgs);
   }
 
+  CStartInst->setMetadata(Mod->getMDKindID("nosanitize"),
+                          MDNode::get(Builder.getContext(), None));
   ArrayRef<Value *> Args;
 
   for (const auto Fnc : TestFunctions)
@@ -1365,22 +1377,30 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
     StartFAccess = Builder.CreateInBoundsGEP(TimespecType, AStart,
                                              TimespecIndexes, "Startfaccess");
     StartFMbr = Builder.CreateLoad(StartFAccess, "Startfmbr");
+    StartFMbr->setMetadata(Mod->getMDKindID("nosanitize"),
+                           MDNode::get(Builder.getContext(), None));
     StartFMbr->setAlignment(8);
     TimespecIndexes[1] = TVNsec;
     StartSAccess = Builder.CreateInBoundsGEP(TimespecType, AStart,
                                              TimespecIndexes, "Startsaccess");
     StartSMbr = Builder.CreateLoad(StartSAccess, "Startsmbr");
+    StartSMbr->setMetadata(Mod->getMDKindID("nosanitize"),
+                           MDNode::get(Builder.getContext(), None));
     StartSMbr->setAlignment(8);
 
     TimespecIndexes[1] = TVsec;
     EndFAccess = Builder.CreateInBoundsGEP(TimespecType, AEnd, TimespecIndexes,
                                            "Endfaccess");
     EndFMbr = Builder.CreateLoad(EndFAccess, "Endfmbr");
+    EndFMbr->setMetadata(Mod->getMDKindID("nosanitize"),
+                         MDNode::get(Builder.getContext(), None));
     EndFMbr->setAlignment(8);
     TimespecIndexes[1] = TVNsec;
     EndSAccess = Builder.CreateInBoundsGEP(TimespecType, AEnd, TimespecIndexes,
                                            "Endsaccess");
     EndSMbr = Builder.CreateLoad(EndSAccess, "Endsmbr");
+    EndSMbr->setMetadata(Mod->getMDKindID("nosanitize"),
+                         MDNode::get(Builder.getContext(), None));
     EndSMbr->setAlignment(8);
   } else {
     Function *Gettimeofday = Mod->getFunction("gettimeofday");
@@ -1414,6 +1434,9 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
     EndSAccess = Builder.CreateInBoundsGEP(TimevalType, AEnd, TimevalIndexes,
                                            "Endsaccess");
   }
+
+  CEndInst->setMetadata(Mod->getMDKindID("nosanitize"),
+                        MDNode::get(Builder.getContext(), None));
 
   char buffer[1024];
   ::strlcpy(buffer, "has", sizeof(buffer));
