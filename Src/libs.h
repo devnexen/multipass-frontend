@@ -1,17 +1,17 @@
 #include <assert.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
 #include <sys/mman.h>
+#include <unistd.h>
 #if defined(__linux__)
 #include <linux/mman.h>
 #include <sys/random.h>
 #elif defined(__FreeBSD__)
-#include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/types.h>
 #include <sys/user.h>
 #endif
 

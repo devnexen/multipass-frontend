@@ -122,6 +122,7 @@ int safe_proc_maps(pid_t pid) {
     munmap(b, len);
   }
 #else
+  (void)index;
   errno = ENOSYS;
   return 0;
 #endif

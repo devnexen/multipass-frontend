@@ -600,6 +600,9 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   AllocaInst *ProcMaps =
       EntryBuilder.CreateAlloca(PProcMapType, nullptr, "Procmaps");
 
+  // TODO
+  (void)ProcMaps;
+
   FreeCallArgs[0] = NPtr;
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
   FreeCallArgs[0] = Ptr;
@@ -957,15 +960,6 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
   Function *PthreadCreateFnc = Function::Create(
       PthreadCreateFt, Function::ExternalLinkage, "pthread_create", Mod);
   PthreadCreateFnc->setCallingConv(CallingConv::C);
-  vector<Type *> emptyArgs(0);
-  vector<Value *> emptyCallArgs(0);
-  FunctionType *PthreadSelfFt =
-      FunctionType::get(PthreadType, emptyArgs, false);
-  Function *PthreadSelfFnc = Function::Create(
-      PthreadSelfFt, Function::ExternalLinkage, "pthread_self", Mod);
-  PthreadSelfFnc->setCallingConv(CallingConv::C);
-
-  Value *Self = EntryBuilder.CreateCall(PthreadSelfFnc, emptyCallArgs);
 
   vector<Type *> PthreadJoinArgs(2);
   PthreadJoinArgs[0] = PointerType::getUnqual(PthreadType);
