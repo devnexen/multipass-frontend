@@ -194,6 +194,9 @@ Function *addBasicFunction(IRBuilder<> Builder, string Name) {
                           Type::getInt64Ty(Builder.getContext()));
   FunctionType *Ft = FunctionType::get(Builder.getInt64Ty(), Integers, false);
   Function *Fnc = Function::Create(Ft, Function::InternalLinkage, Name, Mod);
+  Fnc->addFnAttr(Attribute::StackProtect);
+  Fnc->addFnAttr(Attribute::AlwaysInline);
+  Fnc->removeFnAttr(Attribute::NoInline);
 
   for (Function::arg_iterator AI = Fnc->arg_begin(); Idx != FuncArgs.size();
        ++AI, ++Idx)
