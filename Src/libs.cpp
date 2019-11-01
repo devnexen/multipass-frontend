@@ -1,6 +1,7 @@
 #include "libs.h"
 
 extern "C" {
+
 void safe_bzero(void *p, size_t l) {
   void *(*volatile const b)(void *, int, size_t) = memset;
   (void)b(p, 0, l);
@@ -23,6 +24,7 @@ int safe_bcmp(const void *a, const void *b, size_t l) {
 }
 
 int safe_random(void *buf, size_t len) {
+  safe_bzero(buf, len);
 #if defined(__linux__)
   ssize_t written = getrandom(buf, len, 0);
   (void)written;
@@ -128,5 +130,54 @@ int safe_proc_maps(pid_t pid) {
 #endif
   errno = saved_err;
   return ret;
+}
+
+int safe_alloc(void **ptr, size_t a, size_t l) {
+  if (!ptr)
+    return -1;
+  errno = 0;
+#if defined(USE_MMAP)
+  size_t tl = sizeof(canary) + szl + l;
+  *ptr =
+      mmap(nullptr, tl, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
+  if (*ptr == MAP_FAILED) {
+    *ptr = nullptr;
+    return -1;
+  }
+  auto p = reinterpret_cast<char *>(*ptr);
+  ::memcpy(p, &canary, sizeof(canary));
+  p += sizeof(canary);
+  ::memcpy(p, &l, szl);
+  p += szl;
+  *ptr = p;
+  return 0;
+#else
+#if defined(__linux__)
+  *ptr = memalign(a, l);
+  return *ptr ? 0 : -1;
+#else
+  void *p;
+  int r = posix_memalign(&p, a, l);
+  *ptr = p;
+  return r;
+#endif
+#endif
+}
+
+int safe_free(void *ptr) {
+  errno = 0;
+#if defined(USE_MMAP)
+  size_t l;
+  int32_t readc;
+  auto p = reinterpret_cast<char *>(ptr);
+  p -= szl;
+  ::memcpy(&l, p, szl);
+  p -= sizeof(canary);
+  ::memcpy(&readc, p, sizeof(int32_t));
+  return munmap(p, szl + sizeof(canary) + l);
+#else
+  free(ptr);
+  return 0;
+#endif
 }
 }

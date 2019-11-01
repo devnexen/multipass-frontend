@@ -9,6 +9,7 @@ OLEVEL=0
 CMODEL=2
 OFLAGS=-g -O$(OLEVEL)
 OLIBS=
+MAPFLAGS=
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
 
@@ -37,7 +38,7 @@ testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
 
 exec: operands.o
-	$(CXX) $(OFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp
+	$(CXX) $(OFLAGS) $(MAPFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp
 	$(CC) $(OFLAGS) -o bins/operands objs/operands.o -pthread $(OLIBS) $(ILIBS)
 operands.o: mpass
 	bins/mpass $(MPASSFLAGS)

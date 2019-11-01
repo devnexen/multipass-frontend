@@ -391,6 +391,20 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   SafeProcmapsFnc = Function::Create(SafeProcmapsFt, Function::ExternalLinkage,
                                      "safe_proc_maps", Mod);
   SafeProcmapsFnc->setCallingConv(CallingConv::C);
+  vector<Type *> SafeAllocArgs(3);
+  SafeAllocArgs[0] = PointerType::getUnqual(Builder.getInt8PtrTy());
+  SafeAllocArgs[1] = Builder.getInt64Ty();
+  SafeAllocArgs[2] = Builder.getInt64Ty();
+  FunctionType *SafeAllocFt =
+      FunctionType::get(Builder.getInt32Ty(), SafeAllocArgs, false);
+  Function *SafeAllocFnc = Function::Create(
+      SafeAllocFt, Function::ExternalLinkage, "safe_alloc", Mod);
+  vector<Type *> SafeFreeArgs(1);
+  SafeFreeArgs[0] = Builder.getInt8PtrTy();
+  FunctionType *SafeFreeFt =
+      FunctionType::get(Builder.getInt32Ty(), SafeFreeArgs, false);
+  Function *SafeFreeFnc =
+      Function::Create(SafeFreeFt, Function::ExternalLinkage, "safe_free", Mod);
 
   vector<Type *> MallocArgs(1);
   MallocArgs[0] = Builder.getInt64Ty();
@@ -626,6 +640,17 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
   EntryBuilder.CreateCall(PosixMemalignFnc, PosixMemalignCallArgs);
 
+  AllocaInst *AGPtr = EntryBuilder.CreateAlloca(
+      Builder.getInt8PtrTy(), Constant::getNullValue(Builder.getInt8Ty()),
+      "Agptr");
+
+  vector<Value *> SafeAllocCallArgs(3);
+  SafeAllocCallArgs[0] = AGPtr;
+  SafeAllocCallArgs[1] = VPageSize;
+  SafeAllocCallArgs[2] = PtrLen;
+
+  EntryBuilder.CreateCall(SafeAllocFnc, SafeAllocCallArgs);
+
   Value *PPtr = EntryBuilder.CreateLoad(DPPtr);
 
   Value *TotalAllocatedD = Builder.CreateAdd(TotalAllocatedC, PtrLen);
@@ -633,6 +658,12 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   FreeCallArgs[0] = PPtr;
 
   EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
+
+  Value *GPtr = EntryBuilder.CreateLoad(AGPtr);
+
+  FreeCallArgs[0] = GPtr;
+
+  EntryBuilder.CreateCall(SafeFreeFnc, FreeCallArgs);
 
   Value *Superpg = Builder.getInt64(2 * 1024 * 1024);
 
@@ -1800,7 +1831,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  Mod->setPIELevel(PIELevel::Small);
+  Mod->setPIELevel(PIELevel::Default);
   auto targetMachine =
       unique_ptr<llvm::TargetMachine>(currentTarget->createTargetMachine(
           targetTriple, targetCpu, targetFeatures, opt, relocModel, codeModel,
