@@ -152,15 +152,10 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
   *ptr = p;
   return 0;
 #else
-#if defined(__linux__)
-  *ptr = memalign(a, l);
-  return *ptr ? 0 : -1;
-#else
   void *p;
   int r = posix_memalign(&p, a, l);
   *ptr = p;
   return r;
-#endif
 #endif
 }
 
