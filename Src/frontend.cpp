@@ -1207,8 +1207,10 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
   } else if (hasElfauxinfo) {
     ConstantInt *LongSz =
         ConstantInt::get(Builder.getInt64Ty(), sizeof(unsigned long));
-    AllocaInst *ALong =
-        Builder.CreateAlloca(Builder.getInt8Ty(), nullptr, "Along");
+    AllocaInst *ALongA =
+        Builder.CreateAlloca(Builder.getInt8Ty(), nullptr, "Alonga");
+    AllocaInst *ALongB =
+        Builder.CreateAlloca(Builder.getInt8Ty(), nullptr, "Alongb");
 
     vector<Type *> ElfauxinfoArgs(3);
     ElfauxinfoArgs[0] = Builder.getInt32Ty();
@@ -1223,20 +1225,20 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
 
     vector<Value *> ElfauxinfoCallArgs(3);
     ElfauxinfoCallArgs[0] = Builder.CreateLoad(MAtHwcap);
-    ElfauxinfoCallArgs[1] = ALong;
+    ElfauxinfoCallArgs[1] = ALongA;
     ElfauxinfoCallArgs[2] = LongSz;
 
     Value *TAuxVec = Builder.getInt8(0);
     Value *TAuxVec2 = Builder.getInt8(0);
     Builder.CreateCall(ElfauxinfoFnc, ElfauxinfoCallArgs);
-    Builder.CreateStore(TAuxVec, ALong);
+    Builder.CreateStore(TAuxVec, ALongA);
     Builder.CreateAdd(TAuxVec, AuxVec);
 
     ElfauxinfoCallArgs[0] = Builder.CreateLoad(MAtHwcap2);
-    ElfauxinfoCallArgs[1] = ALong;
+    ElfauxinfoCallArgs[1] = ALongB;
 
     Builder.CreateCall(ElfauxinfoFnc, ElfauxinfoCallArgs);
-    Builder.CreateStore(TAuxVec2, ALong);
+    Builder.CreateStore(TAuxVec2, ALongB);
     Builder.CreateAdd(TAuxVec2, AuxVec2);
   } else {
     Builder.CreateStore(Builder.getInt64(0), AuxVec);
