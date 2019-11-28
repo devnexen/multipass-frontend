@@ -314,6 +314,15 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   Function *MemsetFnc =
       Function::Create(MemsetFt, Function::ExternalLinkage, "memset", Mod);
   MemsetFnc->setCallingConv(CallingConv::C);
+  vector<Type *> MemmemArgs(4);
+  MemmemArgs[0] = Builder.getInt8PtrTy();
+  MemmemArgs[1] = Builder.getInt64Ty();
+  MemmemArgs[2] = Builder.getInt8PtrTy();
+  MemmemArgs[3] = Builder.getInt64Ty();
+  FunctionType *MemmemFt =
+      FunctionType::get(Builder.getInt8PtrTy(), MemmemArgs, false);
+  Function *MemmemFnc =
+      Function::Create(MemmemFt, Function::ExternalLinkage, "memmem", Mod);
 
   vector<Type *> StrlcpyArgs(3);
   StrlcpyArgs[0] = Builder.getInt8PtrTy();
@@ -379,6 +388,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
   MemcmpFnc->setCallingConv(CallingConv::C);
   BcmpFnc->setCallingConv(CallingConv::C);
+  MemmemFnc->setCallingConv(CallingConv::C);
   SafeBcmpFnc =
       Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
 
@@ -600,9 +610,15 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
   MemcmpCallArgs[0] = NPtr;
   MemcmpCallArgs[1] = Ptr;
   MemcmpCallArgs[2] = DPtrLen;
+  vector<Value *> MemmemCallArgs(4);
+  MemmemCallArgs[0] = NPtr;
+  MemmemCallArgs[1] = DPtrLen;
+  MemmemCallArgs[2] = Ptr;
+  MemmemCallArgs[3] = DPtrLen;
 
   Value *MemcmpPtrs = EntryBuilder.CreateCall(MemcmpFnc, MemcmpCallArgs);
   Value *BcmpPtrs = EntryBuilder.CreateCall(BcmpFnc, MemcmpCallArgs);
+  Value *MemmemPtrs = EntryBuilder.CreateCall(MemmemFnc, MemmemCallArgs);
 
   EntryBuilder.CreateStore(MemcmpPtrs, MemcmpRet);
   EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);
