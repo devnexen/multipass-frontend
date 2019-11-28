@@ -137,7 +137,7 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     return -1;
   errno = 0;
 #if defined(USE_MMAP)
-  size_t tl = sizeof(canary) + szl + l;
+  size_t tl = cl + szl + l;
   *ptr =
       mmap(nullptr, tl, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
   if (*ptr == MAP_FAILED) {
@@ -145,8 +145,8 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     return -1;
   }
   auto p = reinterpret_cast<char *>(*ptr);
-  ::memcpy(p, &canary, sizeof(canary));
-  p += sizeof(canary);
+  ::memcpy(p, &canary, cl);
+  p += cl;
   ::memcpy(p, &l, szl);
   p += szl;
   *ptr = p;
@@ -167,9 +167,9 @@ int safe_free(void *ptr) {
   auto p = reinterpret_cast<char *>(ptr);
   p -= szl;
   ::memcpy(&l, p, szl);
-  p -= sizeof(canary);
+  p -= cl;
   ::memcpy(&readc, p, sizeof(int32_t));
-  return munmap(p, szl + sizeof(canary) + l);
+  return munmap(p, szl + cl + l);
 #else
   free(ptr);
   return 0;
