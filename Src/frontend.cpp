@@ -1377,11 +1377,9 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
         AStart = Builder.CreateAlloca(TimespecType, nullptr, "Astart");
         AStart->setMetadata(Mod->getMDKindID("nosanitize"),
                             MDNode::get(Builder.getContext(), None));
-        AStart->setAlignment(8);
         AEnd = Builder.CreateAlloca(TimespecType, nullptr, "Aend");
         AEnd->setMetadata(Mod->getMDKindID("nosanitize"),
                           MDNode::get(Builder.getContext(), None));
-        AEnd->setAlignment(8);
 
         TimeArgs[0] = Builder.CreateLoad(ClockMonotonic);
         TimeArgs[1] = AStart;
@@ -1399,9 +1397,7 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
         Gettimeofday->setCallingConv(CallingConv::C);
 
         AStart = Builder.CreateAlloca(TimevalType, nullptr, "Astart");
-        AStart->setAlignment(8);
         AEnd = Builder.CreateAlloca(TimevalType, nullptr, "Aend");
-        AEnd->setAlignment(8);
 
         TimeArgs[0] = AStart;
         TimeArgs[1] = Constant::getNullValue(Builder.getInt8PtrTy());
@@ -1436,14 +1432,12 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
         StartFMbr = Builder.CreateLoad(StartFAccess, "Startfmbr");
         StartFMbr->setMetadata(Mod->getMDKindID("nosanitize"),
                                MDNode::get(Builder.getContext(), None));
-        StartFMbr->setAlignment(8);
         TimespecIndexes[1] = TVNsec;
         StartSAccess = Builder.CreateInBoundsGEP(
             TimespecType, AStart, TimespecIndexes, "Startsaccess");
         StartSMbr = Builder.CreateLoad(StartSAccess, "Startsmbr");
         StartSMbr->setMetadata(Mod->getMDKindID("nosanitize"),
                                MDNode::get(Builder.getContext(), None));
-        StartSMbr->setAlignment(8);
 
         TimespecIndexes[1] = TVsec;
         EndFAccess = Builder.CreateInBoundsGEP(TimespecType, AEnd,
@@ -1451,14 +1445,12 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
         EndFMbr = Builder.CreateLoad(EndFAccess, "Endfmbr");
         EndFMbr->setMetadata(Mod->getMDKindID("nosanitize"),
                              MDNode::get(Builder.getContext(), None));
-        EndFMbr->setAlignment(8);
         TimespecIndexes[1] = TVNsec;
         EndSAccess = Builder.CreateInBoundsGEP(TimespecType, AEnd,
                                                TimespecIndexes, "Endsaccess");
         EndSMbr = Builder.CreateLoad(EndSAccess, "Endsmbr");
         EndSMbr->setMetadata(Mod->getMDKindID("nosanitize"),
                              MDNode::get(Builder.getContext(), None));
-        EndSMbr->setAlignment(8);
     } else {
         Function *Gettimeofday = Mod->getFunction("gettimeofday");
         TimeArgs[0] = AEnd;
@@ -1477,18 +1469,15 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
         StartFAccess = Builder.CreateInBoundsGEP(
             TimevalType, AStart, TimevalIndexes, "Startfaccess");
         StartFMbr = Builder.CreateLoad(StartFAccess, "Startfmbr");
-        StartFMbr->setAlignment(8);
         TimevalIndexes[1] = TVNsec;
         StartSAccess = Builder.CreateInBoundsGEP(
             TimevalType, AStart, TimevalIndexes, "Startsaccess");
         StartSMbr = Builder.CreateLoad(StartSAccess, "Startsmbr");
-        StartSMbr->setAlignment(8);
 
         TimevalIndexes[1] = TVsec;
         EndFAccess = Builder.CreateInBoundsGEP(TimevalType, AEnd,
                                                TimevalIndexes, "Endfaccess");
         EndFMbr = Builder.CreateLoad(EndFAccess, "Endfmbr");
-        EndFMbr->setAlignment(8);
         TimevalIndexes[1] = TVNsec;
         EndSAccess = Builder.CreateInBoundsGEP(TimevalType, AEnd,
                                                TimevalIndexes, "Endsaccess");
@@ -1631,7 +1620,11 @@ void addMainBlock(IRBuilder<> Builder, Function *MainFnc) {
 void compileObjectFile(TargetMachine *targetMachine, string FileName) {
     legacy::PassManager pass;
     error_code EC;
+#if LLVM_VERSION_MAJOR >= 10
+    auto FileType = CGFT_ObjectFile;
+#else
     auto FileType = TargetMachine::CGFT_ObjectFile;
+#endif
 
     raw_fd_ostream obj(FileName, EC, sys::fs::F_None);
 
