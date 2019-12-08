@@ -18,13 +18,13 @@
 extern "C" {
 
 struct p_proc_map {
-    uintptr_t s;
-    uintptr_t e;
-    size_t sz;
-    int hgmp;
-    int __reserved;
-    int64_t f;
-    char res[24];
+  uintptr_t s;
+  uintptr_t e;
+  size_t sz;
+  int hgmp;
+  int __reserved;
+  int64_t f;
+  char res[24];
 };
 
 const size_t PROC_MAP_MAX = 256;
@@ -39,6 +39,7 @@ __thread struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
 void safe_bzero(void *, size_t);
 int safe_bcmp(const void *, const void *, size_t);
+void *safe_mem(const void *, size_t, const void *, size_t);
 int safe_random(void *, size_t);
 int safe_proc_maps(pid_t);
 int safe_alloc(void **, size_t, size_t);

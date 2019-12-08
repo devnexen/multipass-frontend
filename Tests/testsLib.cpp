@@ -31,6 +31,10 @@ int main(int argc, char **argv) {
   testCond("safe_alloc", ret == 0);
   ret = safe_free(ptr);
   testCond("safe_free", ret == 0);
+  ret = (safe_mem("ab", 2, "cd", 2) == nullptr);
+  testCond("safe_mem", ret == 1);
+  ret = (safe_mem("abcd", 4, "cd", 2) != nullptr);
+  testCond("safe_mem", ret == 1);
   int index = 0;
 
   while (pmap[index].s != 0) {
