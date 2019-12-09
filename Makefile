@@ -12,6 +12,7 @@ OLIBS=
 MAPFLAGS=
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
+PLDFLAGS=$(LDFLAGS) -Wl,-znodelete
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
 VERSION=6.0.0
@@ -34,8 +35,13 @@ LIBS= -lbsd
 endif
 endif
 
+.PHONY: clean libcustom-lib-pass.so
+
 testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
+
+libcustom-lib-pass.so: Plugins/custom-lib-pass.cc
+	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I Src -shared -Wl,-soname,libcustom-lib-pass.so -o Plugins/$@ $< Src/libs.cpp $(PLDFLAGS)
 
 exec: operands.o
 	$(CXX) $(OFLAGS) $(MAPFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp

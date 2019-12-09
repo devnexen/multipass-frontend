@@ -327,6 +327,11 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Function *MemmemFnc =
         Function::Create(MemmemFt, Function::ExternalLinkage, "memmem", Mod);
 
+    FunctionType *SafememFt =
+        FunctionType::get(Builder.getInt8PtrTy(), MemmemArgs, false);
+    Function *SafememFnc =
+        Function::Create(SafememFt, Function::ExternalLinkage, "safe_mem", Mod);
+
     vector<Type *> StrlcpyArgs(3);
     StrlcpyArgs[0] = Builder.getInt8PtrTy();
     StrlcpyArgs[1] = Builder.getInt8PtrTy();
@@ -392,6 +397,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     MemcmpFnc->setCallingConv(CallingConv::C);
     BcmpFnc->setCallingConv(CallingConv::C);
     MemmemFnc->setCallingConv(CallingConv::C);
+    SafememFnc->setCallingConv(CallingConv::C);
+
     SafeBcmpFnc =
         Function::Create(MemcmpFt, Function::ExternalLinkage, "safe_bcmp", Mod);
 
@@ -623,6 +630,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Value *MemcmpPtrs = EntryBuilder.CreateCall(MemcmpFnc, MemcmpCallArgs);
     Value *BcmpPtrs = EntryBuilder.CreateCall(BcmpFnc, MemcmpCallArgs);
     Value *MemmemPtrs = EntryBuilder.CreateCall(MemmemFnc, MemmemCallArgs);
+    Value *SafememPtrs = EntryBuilder.CreateCall(SafememFnc, MemmemCallArgs);
 
     EntryBuilder.CreateStore(MemcmpPtrs, MemcmpRet);
     EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);
