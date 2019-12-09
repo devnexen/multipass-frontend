@@ -18,13 +18,13 @@
 extern "C" {
 
 struct p_proc_map {
-  uintptr_t s;
-  uintptr_t e;
-  size_t sz;
-  int hgmp;
-  int __reserved;
-  int64_t f;
-  char res[24];
+    uintptr_t s;
+    uintptr_t e;
+    size_t sz;
+    int hgmp;
+    int __reserved;
+    int64_t f;
+    char res[24];
 };
 
 const size_t PROC_MAP_MAX = 256;
@@ -47,5 +47,6 @@ int safe_free(void *);
 
 // Few wrappers
 void *safe_malloc(size_t);
-long safe_rand(void);
+long safe_rand_l(void);
+int safe_rand_i(void);
 }
