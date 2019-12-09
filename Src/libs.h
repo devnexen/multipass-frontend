@@ -44,4 +44,8 @@ int safe_random(void *, size_t);
 int safe_proc_maps(pid_t);
 int safe_alloc(void **, size_t, size_t);
 int safe_free(void *);
+
+// Few wrappers
+void *safe_malloc(size_t);
+long safe_rand(void);
 }

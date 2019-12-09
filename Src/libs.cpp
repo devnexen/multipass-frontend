@@ -199,4 +199,18 @@ int safe_free(void *ptr) {
   return 0;
 #endif
 }
+
+void *safe_malloc(size_t l) {
+  void *ptr;
+  safe_alloc(&ptr, 4096, l);
+
+  return ptr;
+}
+
+long safe_rand(void) {
+  long ret;
+  safe_random(&ret, sizeof(ret));
+
+  return ret;
+}
 }
