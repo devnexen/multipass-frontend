@@ -1,7 +1,8 @@
+#define _GNU_SOURCE
+#include <string.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 int (*mcmp)(const void *, const void *, size_t);
