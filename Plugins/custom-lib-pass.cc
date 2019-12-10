@@ -176,47 +176,22 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafefreeFnc =
         Function::Create(SafefreeFt, Function::ExternalLinkage, "safe_free", M);
 
-    for (const auto &cmpfn : cmpfns) {
-        Function *Fn = M.getFunction(cmpfn);
-        if (Fn)
-            fm[SafebcmpFnc].push_back(Fn);
-    }
+#define addOrigFn(KeyFn, fns)                                                  \
+    do {                                                                       \
+        for (const auto &fn : fns) {                                           \
+            Function *Fn = M.getFunction(fn);                                  \
+            if (Fn)                                                            \
+                fm[KeyFn].push_back(Fn);                                       \
+        }                                                                      \
+    } while (0)
 
-    for (const auto &zerofn : zerofns) {
-        Function *Fn = M.getFunction(zerofn);
-        if (Fn)
-            fm[SafebzeroFnc].push_back(Fn);
-    }
-
-    for (const auto &memfn : memfns) {
-        Function *Fn = M.getFunction(memfn);
-        if (Fn)
-            fm[SafememFnc].push_back(Fn);
-    }
-
-    for (const auto &randomfn : randomfns) {
-        Function *Fn = M.getFunction(randomfn);
-        if (Fn)
-            fm[SaferandlFnc].push_back(Fn);
-    }
-
-    for (const auto &randfn : randfns) {
-        Function *Fn = M.getFunction(randfn);
-        if (Fn)
-            fm[SaferandiFnc].push_back(Fn);
-    }
-
-    for (const auto &mallocfn : mallocfns) {
-        Function *Fn = M.getFunction(mallocfn);
-        if (Fn)
-            fm[SafemallocFnc].push_back(Fn);
-    }
-
-    for (const auto &freefn : freefns) {
-        Function *Fn = M.getFunction(freefn);
-        if (Fn)
-            fm[SafefreeFnc].push_back(Fn);
-    }
+    addOrigFn(SafebcmpFnc, cmpfns);
+    addOrigFn(SafebzeroFnc, zerofns);
+    addOrigFn(SafememFnc, memfns);
+    addOrigFn(SaferandlFnc, randomfns);
+    addOrigFn(SaferandiFnc, randfns);
+    addOrigFn(SafemallocFnc, mallocfns);
+    addOrigFn(SafefreeFnc, freefns);
 
     for (auto &F : M) {
         for (auto &BB : F) {
