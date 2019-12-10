@@ -166,7 +166,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SaferandlFt = FunctionType::get(Int64Ty, SaferandlArgs, false);
     SaferandlFnc = Function::Create(SaferandlFt, Function::ExternalLinkage,
                                     "safe_rand_l", M);
-    SaferandiFt = FunctionType::get(Int64Ty, SaferandiArgs, false);
+    SaferandiFt = FunctionType::get(Int32Ty, SaferandiArgs, false);
     SaferandiFnc = Function::Create(SaferandiFt, Function::ExternalLinkage,
                                     "safe_rand_i", M);
     SafemallocFt = FunctionType::get(VoidTy, SafemallocArgs, false);
