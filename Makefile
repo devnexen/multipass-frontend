@@ -41,7 +41,7 @@ testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
 
 libcustom-lib-pass.so: Plugins/custom-lib-pass.cc
-	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I Src -shared -Wl,-soname,libcustom-lib-pass.so -o Plugins/$@ $< $(PLDFLAGS)
+	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I Src -shared -Wl,-soname,$@ -o Plugins/$@ $< $(PLDFLAGS)
 	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o Plugins/libs.o -c Src/libs.cpp
 
 exec: operands.o

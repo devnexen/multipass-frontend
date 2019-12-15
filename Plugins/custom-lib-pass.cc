@@ -40,6 +40,8 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SafemallocFt;
     Function *SafefreeFnc;
     FunctionType *SafefreeFt;
+    Function *SafememsetFnc;
+    FunctionType *SafememsetFt;
     IntegerType *Int32Ty;
     IntegerType *Int64Ty;
     PointerType *VoidTy;
@@ -54,7 +56,8 @@ class CustomLibModPass : public ModulePass {
           SafebzeroFnc(nullptr), SafebzeroFt(nullptr), SafememFnc(nullptr),
           SafememFt(nullptr), SaferandlFnc(nullptr), SaferandlFt(nullptr),
           SaferandiFnc(nullptr), SaferandiFt(nullptr), SafemallocFnc(nullptr),
-          SafemallocFt(nullptr), SafefreeFnc(nullptr), SafefreeFt(nullptr) {
+          SafemallocFt(nullptr), SafefreeFnc(nullptr), SafefreeFt(nullptr),
+          SafememsetFnc(nullptr), SafememsetFt(nullptr) {
         auto verbose = ::getenv("VERBOSE");
         vb = verbose && *verbose == '1';
     }
@@ -77,11 +80,15 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
         return false;
 
     auto fl = flm->second;
+    auto diff = 0ul;
 
     FunctionType *ToFt = ToFnc->getFunctionType();
 
     if ((fit = find(fl.begin(), fl.end(), FCI)) != fl.end()) {
         vector<Value *> fnCallArgs;
+
+        if (!strncmp(FCI->getName().data(), "llvm.", sizeof("llvm.") - 1))
+            diff = 1;
 
         for (auto &Arg : CI->arg_operands()) {
             Value *Val = dyn_cast<Value>(Arg);
@@ -103,7 +110,7 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
         }
     }
 
-    auto nArgs = CI->getNumArgOperands();
+    auto nArgs = CI->getNumArgOperands() - diff;
     for (auto i = 0ul; i < nArgs; i++) {
         Function *FCN = dyn_cast<Function>(CI->getArgOperand(i));
         if (FCN) {
@@ -123,6 +130,7 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
 
 bool CustomLibModPass::runOnModule(Module &M) {
     const char *cmpfns[] = {"memcmp", "bcmp"};
+    const char *memsetfns[] = {"memset", "llvm.memset.p018.i64"};
     const char *randomfns[] = {"random"};
     const char *randfns[] = {"rand"};
     const char *zerofns[] = {"bzero"};
@@ -142,6 +150,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
     vector<Type *> SaferandiArgs(0);
     vector<Type *> SafemallocArgs(1);
     vector<Type *> SafefreeArgs(1);
+    vector<Type *> SafememsetArgs(3);
     SafebcmpArgs[0] = VoidTy;
     SafebcmpArgs[1] = VoidTy;
     SafebcmpArgs[2] = Int64Ty;
@@ -153,6 +162,9 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafememArgs[3] = Int64Ty;
     SafemallocArgs[0] = Int64Ty;
     SafefreeArgs[0] = VoidTy;
+    SafememsetArgs[0] = VoidTy;
+    SafememsetArgs[1] = Int32Ty;
+    SafememsetArgs[2] = Int64Ty;
 
     SafebcmpFt = FunctionType::get(Int32Ty, SafebcmpArgs, false);
     SafebcmpFnc =
@@ -175,6 +187,9 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafefreeFt = FunctionType::get(NoretTy, SafefreeArgs, false);
     SafefreeFnc =
         Function::Create(SafefreeFt, Function::ExternalLinkage, "safe_free", M);
+    SafememsetFt = FunctionType::get(VoidTy, SafememsetArgs, false);
+    SafememsetFnc = Function::Create(SafememsetFt, Function::ExternalLinkage,
+                                     "safe_memset", M);
 
 #define addOrigFn(KeyFn, fns)                                                  \
     do {                                                                       \
@@ -192,6 +207,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
     addOrigFn(SaferandiFnc, randfns);
     addOrigFn(SafemallocFnc, mallocfns);
     addOrigFn(SafefreeFnc, freefns);
+    addOrigFn(SafememsetFnc, memsetfns);
 
     for (auto &F : M) {
         for (auto &BB : F) {
@@ -217,6 +233,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafemallocFnc))
                         chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafefreeFnc))
+                        chg++;
+                    if (updateInst(FCI, CI, BBlst, bbbeg, SafememsetFnc))
                         chg++;
                 }
             }

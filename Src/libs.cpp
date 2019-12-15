@@ -2,9 +2,12 @@
 
 extern "C" {
 
-void safe_bzero(void *p, size_t l) {
-    void *(*volatile const b)(void *, int, size_t) = memset;
-    (void)b(p, 0, l);
+static void *(*volatile const safe_memset_call)(void *, int, size_t) = memset;
+
+void safe_bzero(void *p, size_t l) { (void)safe_memset_call(p, 0, l); }
+
+void *safe_memset(void *p, int c, size_t l) {
+    return safe_memset_call(p, c, l);
 }
 
 int safe_bcmp(const void *a, const void *b, size_t l) {

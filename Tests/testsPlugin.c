@@ -68,6 +68,8 @@ int main(int argc, char **argv) {
     printf("%d\n", l);
     void *ptr = malloc(128);
     free(ptr);
+    ptr = memset(p, '1', sizeof(p) - 1);
+    printf("%c\n", p[0]);
 
     return 0;
 }

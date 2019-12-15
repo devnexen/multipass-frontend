@@ -38,6 +38,7 @@ const size_t cl = sizeof(canary);
 __thread struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
 void safe_bzero(void *, size_t);
+void *safe_memset(void *, int, size_t);
 int safe_bcmp(const void *, const void *, size_t);
 void *safe_mem(const void *, size_t, const void *, size_t);
 int safe_random(void *, size_t);
