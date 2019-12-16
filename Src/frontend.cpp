@@ -332,6 +332,11 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Function *SafememFnc =
         Function::Create(SafememFt, Function::ExternalLinkage, "safe_mem", Mod);
 
+    FunctionType *SafememsetFt =
+        FunctionType::get(Builder.getInt8PtrTy(), MemsetArgs, false);
+    Function *SafememsetFnc =
+        Function::Create(SafememsetFt, Function::ExternalLinkage, "safe_memset", Mod);
+
     vector<Type *> StrlcpyArgs(3);
     StrlcpyArgs[0] = Builder.getInt8PtrTy();
     StrlcpyArgs[1] = Builder.getInt8PtrTy();
@@ -541,6 +546,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     MemsetCallArgs[2] = DstSize;
 
     EntryBuilder.CreateCall(MemsetFnc, MemsetCallArgs);
+    EntryBuilder.CreateCall(SafememsetFnc, MemsetCallArgs);
 
     AllocaInst *DstBuf = EntryBuilder.CreateAlloca(
         Type::getInt8Ty(EntryBuilder.getContext()),
