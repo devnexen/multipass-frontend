@@ -26,6 +26,7 @@ class CustomLibModPass : public ModulePass {
     size_t chg;
     bool vb;
     flmap fm;
+    ConstantInt *True;
     Function *SafebcmpFnc;
     FunctionType *SafebcmpFt;
     Function *SafebzeroFnc;
@@ -42,22 +43,20 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SafefreeFt;
     Function *SafememsetFnc;
     FunctionType *SafememsetFt;
+    IntegerType *Int1Ty;
     IntegerType *Int32Ty;
     IntegerType *Int64Ty;
     PointerType *VoidTy;
     Type *NoretTy;
-    bool updateInst(Function *, CallInst *CI, SymbolTableList<Instruction> &,
+    bool updateInst(Function *, CallInst *, SymbolTableList<Instruction> &,
                     SymbolTableList<Instruction>::iterator &, Function *);
+    bool updateMemsetInst(Function *, CallInst *,
+                          SymbolTableList<Instruction> &,
+                          SymbolTableList<Instruction>::iterator &);
 
   public:
     static char ID;
-    CustomLibModPass()
-        : ModulePass(ID), chg(0), SafebcmpFnc(nullptr), SafebcmpFt(nullptr),
-          SafebzeroFnc(nullptr), SafebzeroFt(nullptr), SafememFnc(nullptr),
-          SafememFt(nullptr), SaferandlFnc(nullptr), SaferandlFt(nullptr),
-          SaferandiFnc(nullptr), SaferandiFt(nullptr), SafemallocFnc(nullptr),
-          SafemallocFt(nullptr), SafefreeFnc(nullptr), SafefreeFt(nullptr),
-          SafememsetFnc(nullptr), SafememsetFt(nullptr) {
+    CustomLibModPass() : ModulePass(ID), chg(0) {
         auto verbose = ::getenv("VERBOSE");
         vb = verbose && *verbose == '1';
     }
@@ -67,6 +66,30 @@ class CustomLibModPass : public ModulePass {
 } // namespace
 
 char CustomLibModPass::ID = 0;
+
+bool CustomLibModPass::updateMemsetInst(
+    Function *FCI, CallInst *CI, SymbolTableList<Instruction> &BBlst,
+    SymbolTableList<Instruction>::iterator &bbbeg) {
+    auto oname = FCI->getName().data();
+
+    if (strncmp(oname, "llvm.memset", sizeof("llvm.memset") - 1))
+        return false;
+
+    FunctionType *FCT = FCI->getFunctionType();
+    auto nArgs = CI->getNumArgOperands();
+    vector<Value *> fnCallArgs(nArgs);
+
+    for (auto i = 0ul; i < nArgs - 1; i++)
+        fnCallArgs[i] = dyn_cast<Value>(CI->getArgOperand(i));
+    fnCallArgs[nArgs - 1] = True;
+    CallInst *cInst = CallInst::Create(FCT, FCI, fnCallArgs);
+    auto &refit = bbbeg;
+    BBlst.insert(bbbeg, cInst);
+    BBlst.remove(refit);
+    if (vb)
+        outs() << *FCI << " intrinsic updated\n";
+    return true;
+}
 
 bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
                                   SymbolTableList<Instruction> &BBlst,
@@ -80,15 +103,11 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
         return false;
 
     auto fl = flm->second;
-    auto diff = 0ul;
 
     FunctionType *ToFt = ToFnc->getFunctionType();
 
     if ((fit = find(fl.begin(), fl.end(), FCI)) != fl.end()) {
         vector<Value *> fnCallArgs;
-
-        if (!strncmp(FCI->getName().data(), "llvm.", sizeof("llvm.") - 1))
-            diff = 1;
 
         for (auto &Arg : CI->arg_operands()) {
             Value *Val = dyn_cast<Value>(Arg);
@@ -110,7 +129,7 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
         }
     }
 
-    auto nArgs = CI->getNumArgOperands() - diff;
+    auto nArgs = CI->getNumArgOperands();
     for (auto i = 0ul; i < nArgs; i++) {
         Function *FCN = dyn_cast<Function>(CI->getArgOperand(i));
         if (FCN) {
@@ -130,19 +149,21 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
 
 bool CustomLibModPass::runOnModule(Module &M) {
     const char *cmpfns[] = {"memcmp", "bcmp"};
-    const char *memsetfns[] = {"memset", "llvm.memset.p018.i64"};
     const char *randomfns[] = {"random"};
     const char *randfns[] = {"rand"};
     const char *zerofns[] = {"bzero"};
     const char *memfns[] = {"memmem"};
+    const char *memsetfns[] = {"memset"};
     const char *mallocfns[] = {"malloc"};
     const char *freefns[] = {"free"};
 
     LLVMContext &C = M.getContext();
+    Int1Ty = IntegerType::getInt1Ty(C);
     Int32Ty = IntegerType::getInt32Ty(C);
     Int64Ty = IntegerType::getInt64Ty(C);
     VoidTy = PointerType::getInt8PtrTy(C);
     NoretTy = IntegerType::getVoidTy(C);
+    True = ConstantInt::get(Int1Ty, true);
     vector<Type *> SafebcmpArgs(3);
     vector<Type *> SafebzeroArgs(2);
     vector<Type *> SafememArgs(4);
@@ -222,6 +243,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
                     if (!FCI)
                         continue;
 
+                    if (updateMemsetInst(FCI, CI, BBlst, bbbeg))
+                        chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafebcmpFnc))
                         chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafememFnc))

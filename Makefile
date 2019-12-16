@@ -42,7 +42,7 @@ testsLib: exec
 
 libcustom-lib-pass.so: Plugins/custom-lib-pass.cc
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I Src -shared -Wl,-soname,$@ -o Plugins/$@ $< $(PLDFLAGS)
-	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o Plugins/libs.o -c Src/libs.cpp
+	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o Plugins/objslibs.o -c Src/libs.cpp
 
 exec: operands.o
 	$(CXX) $(OFLAGS) $(MAPFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp
@@ -58,3 +58,5 @@ dirs:
 clean:
 	rm -rf bins
 	rm -rf objs
+	rm -f Plugins/lib*.so
+	rm -f Plugins/objslibs.o

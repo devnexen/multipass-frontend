@@ -21,6 +21,12 @@ typedef struct _casemem {
     size_t bl;
 } casemem;
 
+typedef struct _casemset {
+    void *b;
+    int c;
+    size_t l;
+} casemset;
+
 void testcmp(int (*mcmp)(const void *, const void *, size_t), const casecmp *cc,
              size_t cl) {
     for (int i = 0; i < cl; i++) {
@@ -37,8 +43,17 @@ void testmem(void *(*mmem)(const void *, size_t, const void *, size_t),
     }
 }
 
+void testmset(void *(*mset)(void *, int, size_t), const casemset *cs,
+              size_t cl) {
+    for (int i = 0; i < cl; i++) {
+        void *p = mset(cs[i].b, cs[i].c, cs[i].l);
+        printf("%s %c => %s\n", cs[i].b, cs[i].c, p);
+    }
+}
+
 int main(int argc, char **argv) {
     char p[128];
+    char z[8];
     const char *pgname = argv[0];
     srandom(time(NULL));
     srand(time(NULL));
@@ -49,14 +64,17 @@ int main(int argc, char **argv) {
     const casemem cm[] = {{p, sizeof p, pgname, pglen},
                           {pgname, pglen, pgname, pglen},
                           {pgname, pglen, "ug", 2}};
+    const casemset cs[] = {{z, '1', sizeof(z) - 1}};
 
     size_t cclen = sizeof(cc) / sizeof(cc[0]);
     size_t cmlen = sizeof(cm) / sizeof(cm[0]);
+    size_t cslen = sizeof(cs) / sizeof(cs[0]);
 
     testcmp(memcmp, cc, cclen);
     testcmp(bcmp, cc, cclen);
 
     testmem(memmem, cm, cmlen);
+    testmset(memset, cs, cslen);
 
     long rd = random() % INT_MAX;
     printf("random is %ld\n", rd);
