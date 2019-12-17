@@ -9,7 +9,7 @@ OFLAGS=-g -O$(OLEVEL)
 .PHONY: clean
 
 libcustom-lib-pass.so: custom-lib-pass.cc
-	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(PLDFLAGS)
+	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(LDFLAGS)
 	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objslibs.o -c ../Src/libs.cpp
 
 clean:
