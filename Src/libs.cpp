@@ -186,9 +186,11 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
 #endif
 }
 
-int safe_free(void *ptr) {
+void safe_free(void *ptr) {
     errno = 0;
 #if defined(USE_MMAP)
+    if (!ptr)
+        return;
     size_t l;
     int32_t readc;
     auto p = reinterpret_cast<char *>(ptr);
@@ -196,10 +198,9 @@ int safe_free(void *ptr) {
     ::memcpy(&l, p, szl);
     p -= cl;
     ::memcpy(&readc, p, sizeof(int32_t));
-    return munmap(p, szl + cl + l);
+    munmap(p, szl + cl + l);
 #else
     free(ptr);
-    return 0;
 #endif
 }
 
@@ -208,6 +209,27 @@ void *safe_malloc(size_t l) {
     safe_alloc(&ptr, 16, l);
 
     return ptr;
+}
+
+void *safe_calloc(size_t nm, size_t l) {
+    void *ptr;
+    ptr = safe_malloc(nm * l);
+
+    if (ptr)
+        ::memset(ptr, 0, nm * l);
+
+    return ptr;
+}
+
+void *safe_realloc(void *o, size_t l) {
+   void *ptr;
+   ptr = safe_malloc(l);
+
+   if (!ptr)
+      return nullptr;
+
+   safe_free(o);
+   return ptr;
 }
 
 long safe_rand_l(void) {

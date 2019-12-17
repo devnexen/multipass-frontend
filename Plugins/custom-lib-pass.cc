@@ -39,6 +39,10 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SaferandiFt;
     Function *SafemallocFnc;
     FunctionType *SafemallocFt;
+    Function *SafecallocFnc;
+    FunctionType *SafecallocFt;
+    Function *SafereallocFnc;
+    FunctionType *SafereallocFt;
     Function *SafefreeFnc;
     FunctionType *SafefreeFt;
     Function *SafememsetFnc;
@@ -48,11 +52,11 @@ class CustomLibModPass : public ModulePass {
     IntegerType *Int64Ty;
     PointerType *VoidTy;
     Type *NoretTy;
-    bool updateInst(Function *, CallInst *, SymbolTableList<Instruction> &,
-                    SymbolTableList<Instruction>::iterator &, Function *);
     bool updateMemsetInst(Function *, CallInst *,
                           SymbolTableList<Instruction> &,
                           SymbolTableList<Instruction>::iterator &);
+    bool updateInst(Function *, CallInst *, SymbolTableList<Instruction> &,
+                    SymbolTableList<Instruction>::iterator &, Function *);
 
   public:
     static char ID;
@@ -155,6 +159,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     const char *memfns[] = {"memmem"};
     const char *memsetfns[] = {"memset"};
     const char *mallocfns[] = {"malloc"};
+    const char *callocfns[] = {"calloc"};
+    const char *reallocfns[] = {"realloc"};
     const char *freefns[] = {"free"};
 
     LLVMContext &C = M.getContext();
@@ -170,6 +176,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     vector<Type *> SaferandlArgs(0);
     vector<Type *> SaferandiArgs(0);
     vector<Type *> SafemallocArgs(1);
+    vector<Type *> SafecallocArgs(2);
+    vector<Type *> SafereallocArgs(2);
     vector<Type *> SafefreeArgs(1);
     vector<Type *> SafememsetArgs(3);
     SafebcmpArgs[0] = VoidTy;
@@ -182,6 +190,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafememArgs[2] = VoidTy;
     SafememArgs[3] = Int64Ty;
     SafemallocArgs[0] = Int64Ty;
+    SafecallocArgs[0] = Int64Ty;
+    SafecallocArgs[1] = Int64Ty;
+    SafereallocArgs[0] = VoidTy;
+    SafereallocArgs[1] = Int64Ty;
     SafefreeArgs[0] = VoidTy;
     SafememsetArgs[0] = VoidTy;
     SafememsetArgs[1] = Int32Ty;
@@ -205,6 +217,12 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafemallocFt = FunctionType::get(VoidTy, SafemallocArgs, false);
     SafemallocFnc = Function::Create(SafemallocFt, Function::ExternalLinkage,
                                      "safe_malloc", M);
+    SafecallocFt = FunctionType::get(VoidTy, SafecallocArgs, false);
+    SafecallocFnc = Function::Create(SafecallocFt, Function::ExternalLinkage,
+                                     "safe_calloc", M);
+    SafereallocFt = FunctionType::get(VoidTy, SafereallocArgs, false);
+    SafereallocFnc = Function::Create(SafereallocFt, Function::ExternalLinkage,
+                                     "safe_realloc", M);
     SafefreeFt = FunctionType::get(NoretTy, SafefreeArgs, false);
     SafefreeFnc =
         Function::Create(SafefreeFt, Function::ExternalLinkage, "safe_free", M);
@@ -227,6 +245,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     addOrigFn(SaferandlFnc, randomfns);
     addOrigFn(SaferandiFnc, randfns);
     addOrigFn(SafemallocFnc, mallocfns);
+    addOrigFn(SafecallocFnc, callocfns);
+    addOrigFn(SafereallocFnc, reallocfns);
     addOrigFn(SafefreeFnc, freefns);
     addOrigFn(SafememsetFnc, memsetfns);
 
@@ -254,6 +274,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
                     if (updateInst(FCI, CI, BBlst, bbbeg, SaferandiFnc))
                         chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafemallocFnc))
+                        chg++;
+                    if (updateInst(FCI, CI, BBlst, bbbeg, SafecallocFnc))
+                        chg++;
+                    if (updateInst(FCI, CI, BBlst, bbbeg, SafereallocFnc))
                         chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafefreeFnc))
                         chg++;

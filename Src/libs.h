@@ -44,10 +44,12 @@ void *safe_mem(const void *, size_t, const void *, size_t);
 int safe_random(void *, size_t);
 int safe_proc_maps(pid_t);
 int safe_alloc(void **, size_t, size_t);
-int safe_free(void *);
+void safe_free(void *);
 
 // Few wrappers
 void *safe_malloc(size_t);
+void *safe_calloc(size_t, size_t);
+void *safe_realloc(void *, size_t);
 long safe_rand_l(void);
 int safe_rand_i(void);
 }
