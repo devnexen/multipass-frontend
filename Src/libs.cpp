@@ -55,8 +55,8 @@ int safe_random(void *buf, size_t len) {
 #if defined(__linux__)
     ssize_t written = getrandom(buf, len, 0);
     (void)written;
-    assert(written == len);
-    return (written == len ? 0 : -1);
+    assert(written == static_cast<ssize_t>(len));
+    return (written == static_cast<ssize_t>(len) ? 0 : -1);
 #else
     arc4random_buf(buf, len);
     return 0;
@@ -65,8 +65,8 @@ int safe_random(void *buf, size_t len) {
 
 int safe_proc_maps(pid_t pid) {
     int ret = -1;
-    int index = 0;
     int saved_err = errno;
+    size_t index = 0;
     errno = 0;
     if (pid == -1)
         pid = getpid();
@@ -205,7 +205,7 @@ int safe_free(void *ptr) {
 
 void *safe_malloc(size_t l) {
     void *ptr;
-    safe_alloc(&ptr, 4096, l);
+    safe_alloc(&ptr, 16, l);
 
     return ptr;
 }
