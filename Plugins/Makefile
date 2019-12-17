@@ -1,6 +1,6 @@
 LLVMCFG=llvm-config
 CXXFLAGS=`$(LLVMCFG) --cxxflags`
-LDFLAGS=`$(LLVMCFG) --ldflags --libs`
+LDFLAGS=`$(LLVMCFG) --ldflags --libs` -Wl,-znodelete
 CC=`$(LLVMCFG) --bindir`/clang
 CXX=`$(LLVMCFG) --bindir`/clang++
 OLEVEL=0
