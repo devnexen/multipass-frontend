@@ -20,12 +20,20 @@ using namespace llvm;
 using namespace std;
 
 namespace {
+
+struct lst {
+    SymbolTableList<Instruction>::iterator o;
+    Instruction *f;
+};
+
 typedef vector<Function *> flst;
 typedef map<Function *, flst> flmap;
+typedef vector<lst> fllist;
 class CustomLibModPass : public ModulePass {
     size_t chg;
     bool vb;
     flmap fm;
+    fllist ft;
     ConstantInt *True;
     Function *SafebcmpFnc;
     FunctionType *SafebcmpFt;
@@ -57,6 +65,7 @@ class CustomLibModPass : public ModulePass {
                           SymbolTableList<Instruction>::iterator &);
     bool updateInst(Function *, CallInst *, SymbolTableList<Instruction> &,
                     SymbolTableList<Instruction>::iterator &, Function *);
+    void finalizeInstLst(SymbolTableList<Instruction> &);
 
   public:
     static char ID;
@@ -87,9 +96,7 @@ bool CustomLibModPass::updateMemsetInst(
         fnCallArgs[i] = dyn_cast<Value>(CI->getArgOperand(i));
     fnCallArgs[nArgs - 1] = True;
     CallInst *cInst = CallInst::Create(FCT, FCI, fnCallArgs);
-    auto &refit = bbbeg;
-    BBlst.insert(bbbeg, cInst);
-    BBlst.remove(refit);
+    ft.push_back({bbbeg, cInst});
     if (vb)
         outs() << *FCI << " intrinsic updated\n";
     return true;
@@ -119,18 +126,8 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
         }
 
         CallInst *cInst = CallInst::Create(ToFt, ToFnc, fnCallArgs);
-        auto &refit = bbbeg;
-        BBlst.insert(bbbeg, cInst);
-        BBlst.remove(refit);
-        Instruction *SI = &(*bbbeg);
-        Value *Ret = dyn_cast<Value>(cInst);
-
-        if (Ret->getType() != NoretTy) {
-            SI->setOperand(0, Ret);
-            if (vb)
-                outs() << *FCI << " function updated to " << *ToFnc << '\n';
-            return true;
-        }
+        ft.push_back({bbbeg, cInst});
+        return true;
     }
 
     auto nArgs = CI->getNumArgOperands();
@@ -149,6 +146,25 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
     }
 
     return false;
+}
+
+void CustomLibModPass::finalizeInstLst(SymbolTableList<Instruction> &BBlst) {
+    for (auto &f : ft) {
+        Value *Ret = dyn_cast<Value>(f.f);
+        Instruction *OI = &(*f.o);
+        BBlst.insert(f.o, f.f);
+        if (f.o != BBlst.end()) {
+            ++f.o;
+            Instruction *SI = &(*f.o);
+            if (Ret->getType() != NoretTy)
+                SI->setOperand(0, Ret);
+        }
+        if (vb)
+            outs() << *OI << " function updated to " << *f.f << '\n';
+        OI->removeFromParent();
+    }
+
+    ft.clear();
 }
 
 bool CustomLibModPass::runOnModule(Module &M) {
@@ -222,7 +238,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
                                      "safe_calloc", M);
     SafereallocFt = FunctionType::get(VoidTy, SafereallocArgs, false);
     SafereallocFnc = Function::Create(SafereallocFt, Function::ExternalLinkage,
-                                     "safe_realloc", M);
+                                      "safe_realloc", M);
     SafefreeFt = FunctionType::get(NoretTy, SafefreeArgs, false);
     SafefreeFnc =
         Function::Create(SafefreeFt, Function::ExternalLinkage, "safe_free", M);
@@ -285,6 +301,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
                         chg++;
                 }
             }
+
+            finalizeInstLst(BBlst);
         }
     }
 
