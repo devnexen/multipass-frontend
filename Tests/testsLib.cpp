@@ -47,5 +47,8 @@ int main(int argc, char **argv) {
         ++index;
     }
 
+    ptr = safe_calloc(16, 32);
+    safe_free(ptr);
+
     return 0;
 }

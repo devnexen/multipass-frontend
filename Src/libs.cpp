@@ -197,7 +197,9 @@ void safe_free(void *ptr) {
     p -= szl;
     ::memcpy(&l, p, szl);
     p -= cl;
-    ::memcpy(&readc, p, sizeof(int32_t));
+    ::memcpy(&readc, p, cl);
+    if (readc != canary)
+        errno = EINVAL;
     munmap(p, szl + cl + l);
 #else
     free(ptr);
@@ -222,14 +224,14 @@ void *safe_calloc(size_t nm, size_t l) {
 }
 
 void *safe_realloc(void *o, size_t l) {
-   void *ptr;
-   ptr = safe_malloc(l);
+    void *ptr;
+    ptr = safe_malloc(l);
 
-   if (!ptr)
-      return nullptr;
+    if (!ptr)
+        return nullptr;
 
-   safe_free(o);
-   return ptr;
+    safe_free(o);
+    return ptr;
 }
 
 long safe_rand_l(void) {
