@@ -35,6 +35,10 @@ LIBS= -lbsd
 endif
 endif
 
+ifdef USE_MMAP
+MAPFLAGS+= -DUSE_MMAP
+endif
+
 .PHONY: clean
 
 testsLib: exec

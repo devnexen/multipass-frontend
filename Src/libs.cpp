@@ -2,6 +2,8 @@
 
 extern "C" {
 
+const int CLOBBER = 0xdead;
+
 static void *(*volatile const safe_memset_call)(void *, int, size_t) = memset;
 
 void safe_bzero(void *p, size_t l) { (void)safe_memset_call(p, 0, l); }
@@ -200,6 +202,7 @@ void safe_free(void *ptr) {
     ::memcpy(&readc, p, cl);
     if (readc != canary)
         errno = EINVAL;
+    safe_memset(p, CLOBBER, szl);
     munmap(p, szl + cl + l);
 #else
     free(ptr);
@@ -210,6 +213,9 @@ void *safe_malloc(size_t l) {
     void *ptr;
     safe_alloc(&ptr, 16, l);
 
+    if (ptr)
+        safe_memset(ptr, CLOBBER, l);
+
     return ptr;
 }
 
@@ -218,7 +224,7 @@ void *safe_calloc(size_t nm, size_t l) {
     ptr = safe_malloc(nm * l);
 
     if (ptr)
-        ::memset(ptr, 0, nm * l);
+        safe_memset(ptr, 0, nm * l);
 
     return ptr;
 }
