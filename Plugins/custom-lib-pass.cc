@@ -98,7 +98,7 @@ bool CustomLibModPass::updateMemsetInst(
     CallInst *cInst = CallInst::Create(FCT, FCI, fnCallArgs);
     ft.push_back({bbbeg, cInst});
     if (vb)
-        outs() << *FCI << " intrinsic updated\n";
+        outs() << *CI << " intrinsic updated to " << *cInst << '\n';
     return true;
 }
 
@@ -139,7 +139,11 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
             if ((fit = find(fl.begin(), fl.end(), FCN)) != fl.end()) {
                 CI->setArgOperand(i, ToFnc);
                 if (vb)
-                    outs() << *FCN << " argument updated to " << *ToFnc << '\n';
+                    outs()
+                        << FCN->getName() << " argument updated of "
+                        << CI->getCalledFunction()->getName() << " to "
+                        << dyn_cast<Function>(CI->getArgOperand(i))->getName()
+                        << '\n';
                 return true;
             }
         }
@@ -151,7 +155,8 @@ bool CustomLibModPass::updateInst(Function *FCI, CallInst *CI,
 void CustomLibModPass::finalizeInstLst(SymbolTableList<Instruction> &BBlst) {
     for (auto &f : ft) {
         Value *Ret = dyn_cast<Value>(f.f);
-        Instruction *OI = &(*f.o);
+        CallInst *OI = dyn_cast<CallInst>(&(*f.o));
+        CallInst *FI = dyn_cast<CallInst>(&(*f.f));
         BBlst.insert(f.o, f.f);
         if (f.o != BBlst.end()) {
             ++f.o;
@@ -160,7 +165,9 @@ void CustomLibModPass::finalizeInstLst(SymbolTableList<Instruction> &BBlst) {
                 SI->setOperand(0, Ret);
         }
         if (vb)
-            outs() << *OI << " function updated to " << *f.f << '\n';
+            outs() << OI->getCalledFunction()->getName()
+                   << " function updated to "
+                   << FI->getCalledFunction()->getName() << '\n';
         OI->removeFromParent();
     }
 
