@@ -1,0 +1,4 @@
+bins
+objs
+*.o
+*.so
