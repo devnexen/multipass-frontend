@@ -6,13 +6,25 @@ const int CLOBBER = 0xdead;
 
 #if !defined(USE_MMAP)
 static void (*ofree)(void *) = nullptr;
-#endif
-static void *(*volatile const safe_memset_call)(void *, int, size_t) = memset;
 
-void safe_bzero(void *p, size_t l) { (void)safe_memset_call(p, 0, l); }
+void init_libc(void) {
+    if (ofree)
+        return;
+
+    ofree = reinterpret_cast<decltype(ofree)>(dlsym(RTLD_NEXT, "free"));
+    if (!ofree)
+        errx(1, "%s\n", dlerror());
+}
+#endif
+
+void safe_bzero(void *p, size_t l) { (void)safe_memset(p, 0, l); }
 
 void *safe_memset(void *p, int c, size_t l) {
-    return safe_memset_call(p, c, l);
+    volatile char *ptr = reinterpret_cast<volatile char *>(p);
+    for (auto i = 0ul; i < l; i ++)
+        ptr[i] = c;
+
+    return p;
 }
 
 int safe_bcmp(const void *a, const void *b, size_t l) {
@@ -208,8 +220,7 @@ void safe_free(void *ptr) {
     safe_memset(p, CLOBBER, szl);
     munmap(p, szl + cl + l);
 #else
-    if (!ofree)
-        ofree = reinterpret_cast<decltype(ofree)>(dlsym(RTLD_NEXT, "free"));
+    init_libc();
     ofree(ptr);
 #endif
 }

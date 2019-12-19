@@ -10,7 +10,7 @@ OLEVEL=0
 CMODEL=2
 OFLAGS=-g -O$(OLEVEL)
 OLIBS=
-MPALDFLAGS=
+MAPLDFLAGS=-pthread
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
 PLDFLAGS=$(LDFLAGS) -Wl,-znodelete
@@ -24,6 +24,9 @@ ifeq (,$(findstring $(PLATFORM), DragonFly))
 LIBS=-lncurses
 endif
 endif
+ifneq (,$(findstring $(PLATFORM), FreeBSD))
+MAPLDFLAGS+=-ldl
+endif
 ifneq (,$(findstring $(PLATFORM), OpenBSD))
 OLIBS=-Wl,-z,notext
 endif
@@ -33,7 +36,7 @@ endif
 ifneq (,$(findstring $(PLATFORM), Linux))
 OLIBS= -lbsd
 LIBS= -lbsd
-MAPLDFLAGS=-ldl
+MAPLDFLAGS+=-ldl
 endif
 endif
 
