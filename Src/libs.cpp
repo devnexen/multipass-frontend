@@ -231,6 +231,7 @@ void *safe_realloc(void *o, size_t l) {
         return nullptr;
 
     safe_free(o);
+    o = nullptr;
     return ptr;
 }
 

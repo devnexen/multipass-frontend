@@ -334,8 +334,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
     FunctionType *SafememsetFt =
         FunctionType::get(Builder.getInt8PtrTy(), MemsetArgs, false);
-    Function *SafememsetFnc =
-        Function::Create(SafememsetFt, Function::ExternalLinkage, "safe_memset", Mod);
+    Function *SafememsetFnc = Function::Create(
+        SafememsetFt, Function::ExternalLinkage, "safe_memset", Mod);
 
     vector<Type *> StrlcpyArgs(3);
     StrlcpyArgs[0] = Builder.getInt8PtrTy();
@@ -424,12 +424,12 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
         FunctionType::get(Builder.getInt32Ty(), SafeAllocArgs, false);
     Function *SafeAllocFnc = Function::Create(
         SafeAllocFt, Function::ExternalLinkage, "safe_alloc", Mod);
-    vector<Type *> SafeFreeArgs(1);
-    SafeFreeArgs[0] = Builder.getInt8PtrTy();
-    FunctionType *SafeFreeFt =
-        FunctionType::get(Builder.getInt32Ty(), SafeFreeArgs, false);
-    Function *SafeFreeFnc = Function::Create(
-        SafeFreeFt, Function::ExternalLinkage, "safe_free", Mod);
+    vector<Type *> SafefreeArgs(1);
+    SafefreeArgs[0] = Builder.getInt8PtrTy();
+    FunctionType *SafefreeFt =
+        FunctionType::get(Builder.getInt32Ty(), SafefreeArgs, false);
+    Function *SafefreeFnc = Function::Create(
+        SafefreeFt, Function::ExternalLinkage, "safe_free", Mod);
 
     vector<Type *> MallocArgs(1);
     MallocArgs[0] = Builder.getInt64Ty();
@@ -438,6 +438,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Function *MallocFnc =
         Function::Create(MallocFt, Function::ExternalLinkage, "malloc", Mod);
     MallocFnc->setCallingConv(CallingConv::C);
+    Function *SafemallocFnc = Function::Create(
+        MallocFt, Function::ExternalLinkage, "safe_malloc", Mod);
 
     vector<Type *> CallocArgs(2);
     CallocArgs[0] = Builder.getInt64Ty();
@@ -447,6 +449,9 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Function *CallocFnc =
         Function::Create(CallocFt, Function::ExternalLinkage, "calloc", Mod);
     CallocFnc->setCallingConv(CallingConv::C);
+    Function *SafecallocFnc = Function::Create(
+        CallocFt, Function::ExternalLinkage, "safe_calloc", Mod);
+    SafecallocFnc->setCallingConv(CallingConv::C);
 
     vector<Type *> ReallocArgs(2);
     ReallocArgs[0] = Builder.getInt8PtrTy();
@@ -456,6 +461,9 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     Function *ReallocFnc =
         Function::Create(ReallocFt, Function::ExternalLinkage, "realloc", Mod);
     ReallocFnc->setCallingConv(CallingConv::C);
+    Function *SafereallocFnc = Function::Create(
+        ReallocFt, Function::ExternalLinkage, "safe_realloc", Mod);
+    SafereallocFnc->setCallingConv(CallingConv::C);
 
     FunctionType *GetpagesizeFt =
         FunctionType::get(Builder.getInt64Ty(), false);
@@ -659,6 +667,15 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
     FreeCallArgs[0] = Ptr;
     EntryBuilder.CreateCall(FreeFnc, FreeCallArgs);
 
+    Ptr = EntryBuilder.CreateCall(SafemallocFnc, MallocCallArgs);
+    ReallocCallArgs[0] = Ptr;
+    NPtr = EntryBuilder.CreateCall(SafereallocFnc, ReallocCallArgs);
+    FreeCallArgs[0] = NPtr;
+    EntryBuilder.CreateCall(SafefreeFnc, FreeCallArgs);
+    Ptr = EntryBuilder.CreateCall(SafecallocFnc, CallocCallArgs);
+    FreeCallArgs[0] = Ptr;
+    EntryBuilder.CreateCall(SafefreeFnc, FreeCallArgs);
+
     Value *VPageSize = EntryBuilder.CreateCall(GetpagesizeFnc);
 
     EntryBuilder.CreateStore(VPageSize, PageSize);
@@ -697,7 +714,7 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
     FreeCallArgs[0] = GPtr;
 
-    EntryBuilder.CreateCall(SafeFreeFnc, FreeCallArgs);
+    EntryBuilder.CreateCall(SafefreeFnc, FreeCallArgs);
 
     Value *Superpg = Builder.getInt64(2 * 1024 * 1024);
 
@@ -1092,7 +1109,7 @@ void addMTTestBlock(IRBuilder<> Builder, const char *FName, Function *TestFnc) {
 
         vector<Value *> PthreadGetnameNpCallArgs(3);
         PthreadGetnameNpCallArgs[0] = Ptd;
-        PthreadGetnameNpCallArgs[1] = NameStack;
+        PthreadGetnameNpCallArgs[1] = EntryBuilder.CreateLoad(NameStack);
         PthreadGetnameNpCallArgs[2] = NameStackLim;
 
         EntryBuilder.CreateCall(PthreadGetnameNpFnc, PthreadGetnameNpCallArgs);
