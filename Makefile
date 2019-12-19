@@ -5,13 +5,13 @@ CXXFLAGS=`$(LLVMCFG) --cxxflags`
 LDFLAGS=`$(LLVMCFG) --ldflags --libs`
 CC=`$(LLVMCFG) --bindir`/clang
 CXX=`$(LLVMCFG) --bindir`/clang++
+AR=ar
 OLEVEL=0
 CMODEL=2
 OFLAGS=-g -O$(OLEVEL)
 OLIBS=
-MAPFLAGS=
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
-ILIBS = -L objs -Wl,-rpath,objs -llibs
+ILIBS = -L objs -Wl,-rpath,objs -llibsmmap
 PLDFLAGS=$(LDFLAGS) -Wl,-znodelete
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
@@ -35,18 +35,20 @@ LIBS= -lbsd
 endif
 endif
 
-ifdef USE_MMAP
-MAPFLAGS+= -DUSE_MMAP
-endif
-
 .PHONY: clean
 
 testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
 
 exec: operands.o
-	$(CXX) $(OFLAGS) $(MAPFLAGS) -Wall  -fPIC -I Src -shared -Wl,-soname,liblibs.so -o objs/liblibs.so Src/libs.cpp
+	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objs/libs.o -c Src/libs.cpp
+	$(CXX) $(OFLAGS) -DUSE_MMAP=1 -Wall -fPIC -I Src -o objs/libsmmap.o -c Src/libs.cpp
+	$(CXX) $(OFLAGS) -shared -Wl,-soname,liblibs.so -o objs/liblibs.so objs/libs.o
+	$(CXX) $(OFLAGS) -shared -Wl,-soname,liblibsmmap.so -o objs/liblibsmmap.so objs/libsmmap.o
+	$(AR) rcs objs/liblibs.a objs/libs.o
+	$(AR) rcs objs/liblibsmmap.a objs/libsmmap.o
 	$(CC) $(OFLAGS) -o bins/operands objs/operands.o -pthread $(OLIBS) $(ILIBS)
+	$(CC) $(OFLAGS) -Wall -fPIC -I Src -shared -Wl,-soname,libwrapper.so -o objs/libwrapper.so Src/wrapper.cpp -pthread $(OLIBS) $(ILIBS)
 operands.o: mpass
 	bins/mpass $(MPASSFLAGS)
 mpass:  dirs
