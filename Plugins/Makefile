@@ -11,8 +11,9 @@ OFLAGS=-g -O$(OLEVEL)
 libcustom-lib-pass.so: custom-lib-pass.cc
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(LDFLAGS)
 	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objslibs.o -c ../Src/libs.cpp
+	$(CXX) $(OFLAGS) -DUSE_MMAP=1 -Wall -fPIC -I Src -o objslibsmmap.o -c ../Src/libs.cpp
 
 clean:
 	rm -f lib*.so
 	rm -f lib*.a
-	rm -f objslibs.o
+	rm -f objslibs*.o
