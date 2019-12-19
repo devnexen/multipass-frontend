@@ -47,7 +47,7 @@ void testmset(void *(*mset)(void *, int, size_t), const casemset *cs,
               size_t cl) {
     for (int i = 0; i < cl; i++) {
         void *p = mset(cs[i].b, cs[i].c, cs[i].l);
-        printf("%s %c => %s\n", cs[i].b, cs[i].c, p);
+        printf("%s %c => %s\n", (char *)cs[i].b, cs[i].c, (char *)p);
     }
 }
 

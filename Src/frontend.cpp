@@ -643,8 +643,8 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
     Value *MemcmpPtrs = EntryBuilder.CreateCall(MemcmpFnc, MemcmpCallArgs);
     Value *BcmpPtrs = EntryBuilder.CreateCall(BcmpFnc, MemcmpCallArgs);
-    Value *MemmemPtrs = EntryBuilder.CreateCall(MemmemFnc, MemmemCallArgs);
-    Value *SafememPtrs = EntryBuilder.CreateCall(SafememFnc, MemmemCallArgs);
+    EntryBuilder.CreateCall(MemmemFnc, MemmemCallArgs);
+    EntryBuilder.CreateCall(SafememFnc, MemmemCallArgs);
 
     EntryBuilder.CreateStore(MemcmpPtrs, MemcmpRet);
     EntryBuilder.CreateStore(BcmpPtrs, BcmpRet);

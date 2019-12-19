@@ -14,4 +14,5 @@ libcustom-lib-pass.so: custom-lib-pass.cc
 
 clean:
 	rm -f lib*.so
+	rm -f lib*.a
 	rm -f objslibs.o

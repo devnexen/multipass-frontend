@@ -24,7 +24,6 @@ int main(int argc, char **argv) {
     testCond("safe_bcmp", ret == 0);
     ret = safe_bcmp("a", "b", 1);
     testCond("safe_bcmp", ret != 0);
-    ret = 0;
     ret = safe_proc_maps(-1);
     testCond("safe_proc_maps", ret != -1);
     ret = safe_alloc(&ptr, 4096, 16);
