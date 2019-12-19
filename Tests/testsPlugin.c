@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
     void *ptr = malloc(128);
     void *aptr = realloc(ptr, 256);
     free(aptr);
-    void *cptrr = calloc(1, 128);
+    void *cptrr = calloc(1, 255);
     free(cptrr);
     ptr = memset(p, '1', sizeof(p) - 1);
     printf("%c\n", p[0]);

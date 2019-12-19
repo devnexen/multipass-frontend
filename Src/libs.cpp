@@ -185,11 +185,9 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     int mflags = MAP_SHARED | MAP_ANON;
 #if defined(__FreeBSD__)
     mflags |= MAP_ALIGNED(12);
-#else
-    tl += (tl & 4095) + 1;
 #endif
     *ptr =
-        mmap(nullptr, tl, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
+        mmap(nullptr, tl, PROT_READ | PROT_WRITE, mflags, -1, 0);
     if (*ptr == MAP_FAILED) {
         *ptr = nullptr;
         return -1;
