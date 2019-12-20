@@ -60,7 +60,7 @@ class CustomLibModPass : public ModulePass {
     IntegerType *Int64Ty;
     PointerType *VoidTy;
     Type *NoretTy;
-    bool updateMemsetInst(Function *, CallInst *,
+    bool updateIntrinsics(Function *, CallInst *,
                           SymbolTableList<Instruction> &,
                           SymbolTableList<Instruction>::iterator &);
     bool updateInst(Function *, CallInst *, SymbolTableList<Instruction> &,
@@ -80,12 +80,12 @@ class CustomLibModPass : public ModulePass {
 
 char CustomLibModPass::ID = 0;
 
-bool CustomLibModPass::updateMemsetInst(
+bool CustomLibModPass::updateIntrinsics(
     Function *FCI, CallInst *CI, SymbolTableList<Instruction> &BBlst,
     SymbolTableList<Instruction>::iterator &bbbeg) {
     auto oname = FCI->getName().data();
 
-    if (strncmp(oname, "llvm.memset", sizeof("llvm.memset") - 1))
+    if (strncmp(oname, "llvm.mem", sizeof("llvm.mem") - 1))
         return false;
 
     FunctionType *FCT = FCI->getFunctionType();
@@ -157,6 +157,8 @@ void CustomLibModPass::finalizeInstLst(SymbolTableList<Instruction> &BBlst) {
         Value *Ret = dyn_cast<Value>(f.f);
         CallInst *OI = dyn_cast<CallInst>(&(*f.o));
         CallInst *FI = dyn_cast<CallInst>(&(*f.f));
+        if (OI->getCalledFunction()->isIntrinsic())
+            continue;
         BBlst.insert(f.o, f.f);
         if (f.o != BBlst.end()) {
             ++f.o;
@@ -286,7 +288,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
                     if (!FCI)
                         continue;
 
-                    if (updateMemsetInst(FCI, CI, BBlst, bbbeg))
+                    if (updateIntrinsics(FCI, CI, BBlst, bbbeg))
                         chg++;
                     if (updateInst(FCI, CI, BBlst, bbbeg, SafebcmpFnc))
                         chg++;

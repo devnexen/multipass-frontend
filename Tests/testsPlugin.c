@@ -91,6 +91,8 @@ int main(int argc, char **argv) {
     free(cptrr);
     ptr = memset(p, '1', sizeof(p) - 1);
     printf("%c\n", p[0]);
+    memcpy(p, "abc", 3);
+    printf("%c\n", p[0]);
 
     return 0;
 }
