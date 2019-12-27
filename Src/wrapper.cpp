@@ -55,4 +55,12 @@ void *memmem(const void *h, size_t hl, const void *bh, size_t bhl) {
     return safe_mem(h, hl, bh, bhl);
 }
 
+char *strncpy(char *dst, const char *src, size_t len) {
+    return safe_strcpy(dst, src, len);
+}
+
+char *strncat(char *dst, const char *src, size_t len) {
+    return safe_strcat(dst, src, len);
+}
+
 }

@@ -250,10 +250,12 @@ char *safe_strcpy(char *dst, const char *src, size_t l) {
 char *safe_strcat(char *dst, const char *src, size_t l) {
     char *udst = dst;
 
-    while (udst && *udst) {
+    if (l == 0)
+        return dst;
+
+    while (udst && *udst && --l > 0)
         ++udst;
-        --l;
-    }
+
     (void)safe_strcpy(udst, src, l);
     return dst;
 }
