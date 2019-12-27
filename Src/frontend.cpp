@@ -347,6 +347,10 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
         Function::Create(StrlcpyFt, Function::ExternalLinkage, "strlcpy", Mod);
     Function *StrlcatFnc =
         Function::Create(StrlcpyFt, Function::ExternalLinkage, "strlcat", Mod);
+    Function *SafestrcpyFnc = Function::Create(
+        StrlcpyFt, Function::ExternalLinkage, "safe_strcpy", Mod);
+    Function *SafestrcatFnc = Function::Create(
+        StrlcpyFt, Function::ExternalLinkage, "safe_strcat", Mod);
 
     if (hasExplicitBzero) {
         vector<Type *> ExplicitBzeroArgs(2);
@@ -572,6 +576,9 @@ void addMemoryTestBlock(IRBuilder<> Builder) {
 
     EntryBuilder.CreateStore(VSzStrlcpy, SzStrlcpy);
     EntryBuilder.CreateStore(VSzStrlcat, SzStrlcat);
+
+    EntryBuilder.CreateCall(SafestrcpyFnc, StrlcpyCallArgs);
+    EntryBuilder.CreateCall(SafestrcatFnc, StrlcpyCallArgs);
 
     Value *Ptr = nullptr;
     Value *NPtr = nullptr;

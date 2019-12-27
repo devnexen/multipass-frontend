@@ -21,7 +21,7 @@ void safe_bzero(void *p, size_t l) { (void)safe_memset(p, 0, l); }
 
 void *safe_memset(void *p, int c, size_t l) {
     volatile char *ptr = reinterpret_cast<volatile char *>(p);
-    for (auto i = 0ul; i < l; i ++)
+    for (auto i = 0ul; i < l; i++)
         ptr[i] = c;
 
     return p;
@@ -186,8 +186,7 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
 #if defined(__FreeBSD__)
     mflags |= MAP_ALIGNED(12);
 #endif
-    *ptr =
-        mmap(nullptr, tl, PROT_READ | PROT_WRITE, mflags, -1, 0);
+    *ptr = mmap(nullptr, tl, PROT_READ | PROT_WRITE, mflags, -1, 0);
     if (*ptr == MAP_FAILED) {
         *ptr = nullptr;
         return -1;
@@ -227,6 +226,31 @@ void safe_free(void *ptr) {
     init_libc();
     ofree(ptr);
 #endif
+}
+
+char *safe_strcpy(char *dst, const char *src, size_t l) {
+    size_t d = 0;
+    char *udst = dst;
+    const char *usrc = src;
+
+    while (l-- > 0) {
+        if (!(*udst++ = *usrc++))
+            break;
+        ++d;
+    }
+
+    dst[d] = 0;
+
+    return dst ? dst : NULL;
+}
+
+char *safe_strcat(char *dst, const char *src, size_t l) {
+    char *udst = dst;
+
+    while (udst && *udst)
+        ++udst;
+    (void)safe_strcpy(udst, src, l);
+    return dst;
 }
 
 void *safe_malloc(size_t l) {

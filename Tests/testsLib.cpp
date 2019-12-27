@@ -35,6 +35,10 @@ int main(int argc, char **argv) {
     testCond("safe_mem", ret == 1);
     safe_memset(buf, '1', sizeof(buf) - 1);
     testCond("safe_memset", buf[0] == '1');
+    safe_strcpy(p, "abcdefeghijklmnopq", 3);
+    testCond("safe_strcpy", !strcmp(p, "abc"));
+    safe_strcat(p, "def", sizeof(p));
+    testCond("safe_strcat", !strcmp(p, "abcdef"));
     int index = 0;
 
     while (pmap[index].s != 0) {
