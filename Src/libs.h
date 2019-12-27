@@ -17,7 +17,9 @@
 #include <sys/user.h>
 #endif
 
+#if defined(__cplusplus)
 extern "C" {
+#endif
 
 struct p_proc_map {
     uintptr_t s;
@@ -37,7 +39,7 @@ const size_t szl = sizeof(size_t);
 const size_t cl = sizeof(canary);
 #endif
 
-__thread struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
+static struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
 void safe_bzero(void *, size_t);
 void *safe_memset(void *, int, size_t);
@@ -56,4 +58,6 @@ void *safe_calloc(size_t, size_t);
 void *safe_realloc(void *, size_t);
 long safe_rand_l(void);
 int safe_rand_i(void);
+#if defined(__cplusplus)
 }
+#endif

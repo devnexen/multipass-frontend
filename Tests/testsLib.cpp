@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     safe_memset(buf, '1', sizeof(buf) - 1);
     testCond("safe_memset", buf[0] == '1');
     safe_strcpy(p, "abcdefeghijklmnopq", 3);
-    testCond("safe_strcpy", !strcmp(p, "abc"));
-    safe_strcat(p, "def", sizeof(p));
+    testCond("safe_strcpy", !strcmp(p, "ab"));
+    safe_strcat(p, "cdef", sizeof(p));
     testCond("safe_strcat", !strcmp(p, "abcdef"));
     int index = 0;
 

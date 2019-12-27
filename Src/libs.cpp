@@ -229,26 +229,31 @@ void safe_free(void *ptr) {
 }
 
 char *safe_strcpy(char *dst, const char *src, size_t l) {
-    size_t d = 0;
+    int d = 0;
     char *udst = dst;
     const char *usrc = src;
 
-    while (l-- > 0) {
-        if (!(*udst++ = *usrc++))
+    if (!dst || !src)
+        return NULL;
+
+    while (--l > 0) {
+        if (!*usrc || !(*udst++ = *usrc++))
             break;
         ++d;
     }
 
     dst[d] = 0;
 
-    return dst ? dst : NULL;
+    return dst;
 }
 
 char *safe_strcat(char *dst, const char *src, size_t l) {
     char *udst = dst;
 
-    while (udst && *udst)
+    while (udst && *udst) {
         ++udst;
+        --l;
+    }
     (void)safe_strcpy(udst, src, l);
     return dst;
 }
