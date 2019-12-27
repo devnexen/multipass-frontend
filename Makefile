@@ -14,6 +14,7 @@ MAPLDFLAGS=-pthread
 MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
 PLDFLAGS=$(LDFLAGS) -Wl,-znodelete
+MAKE=make
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
 VERSION=6.0.0
@@ -26,12 +27,15 @@ endif
 endif
 ifneq (,$(findstring $(PLATFORM), FreeBSD))
 MAPLDFLAGS+=-ldl
+MAKE=gmake
 endif
 ifneq (,$(findstring $(PLATFORM), OpenBSD))
 OLIBS=-Wl,-z,notext
+MAKE=gmake
 endif
 ifneq (,$(findstring $(PLATFORM), NetBSD))
 OLIBS=-Wl,-z,notext
+MAKE=gmake
 endif
 ifneq (,$(findstring $(PLATFORM), Linux))
 OLIBS= -lbsd
@@ -41,6 +45,10 @@ endif
 endif
 
 .PHONY: clean
+
+dist: testsLib
+	$(MAKE) -C Plugins clean
+	$(MAKE) -C Plugins
 
 testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)

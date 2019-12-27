@@ -313,28 +313,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
 
                     if (updateIntrinsics(FCI, CI, BBlst, bbbeg))
                         chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafebcmpFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafememFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SaferandlFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SaferandiFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafemallocFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafecallocFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafereallocFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafefreeFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafememsetFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafestrcpyFnc))
-                        chg++;
-                    if (updateInst(FCI, CI, BBlst, bbbeg, SafestrcatFnc))
-                        chg++;
+                    for (auto &Fentry : fm) {
+                        if (updateInst(FCI, CI, BBlst, bbbeg, Fentry.first))
+                            chg++;
+                    }
                 }
             }
 
