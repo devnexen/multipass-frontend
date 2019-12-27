@@ -41,10 +41,10 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SafebzeroFt;
     Function *SafememFnc;
     FunctionType *SafememFt;
-    Function *SaferandlFnc;
-    FunctionType *SaferandlFt;
-    Function *SaferandiFnc;
-    FunctionType *SaferandiFt;
+    Function *SaferandomFnc;
+    FunctionType *SaferandomFt;
+    Function *SaferandFnc;
+    FunctionType *SaferandFt;
     Function *SafemallocFnc;
     FunctionType *SafemallocFt;
     Function *SafecallocFnc;
@@ -204,8 +204,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     vector<Type *> SafebcmpArgs(3);
     vector<Type *> SafebzeroArgs(2);
     vector<Type *> SafememArgs(4);
-    vector<Type *> SaferandlArgs(0);
-    vector<Type *> SaferandiArgs(0);
+    vector<Type *> SaferandomArgs(0);
+    vector<Type *> SaferandArgs(0);
     vector<Type *> SafemallocArgs(1);
     vector<Type *> SafecallocArgs(2);
     vector<Type *> SafereallocArgs(2);
@@ -247,12 +247,12 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafememFt = FunctionType::get(VoidTy, SafememArgs, false);
     SafememFnc =
         Function::Create(SafememFt, Function::ExternalLinkage, "safe_mem", M);
-    SaferandlFt = FunctionType::get(Int64Ty, SaferandlArgs, false);
-    SaferandlFnc = Function::Create(SaferandlFt, Function::ExternalLinkage,
-                                    "safe_rand_l", M);
-    SaferandiFt = FunctionType::get(Int32Ty, SaferandiArgs, false);
-    SaferandiFnc = Function::Create(SaferandiFt, Function::ExternalLinkage,
-                                    "safe_rand_i", M);
+    SaferandomFt = FunctionType::get(Int64Ty, SaferandArgs, false);
+    SaferandomFnc = Function::Create(SaferandFt, Function::ExternalLinkage,
+                                    "safe_random", M);
+    SaferandFt = FunctionType::get(Int32Ty, SaferandArgs, false);
+    SaferandFnc = Function::Create(SaferandFt, Function::ExternalLinkage,
+                                    "safe_rand", M);
     SafemallocFt = FunctionType::get(VoidTy, SafemallocArgs, false);
     SafemallocFnc = Function::Create(SafemallocFt, Function::ExternalLinkage,
                                      "safe_malloc", M);
@@ -288,8 +288,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     addOrigFn(SafebcmpFnc, cmpfns);
     addOrigFn(SafebzeroFnc, zerofns);
     addOrigFn(SafememFnc, memfns);
-    addOrigFn(SaferandlFnc, randomfns);
-    addOrigFn(SaferandiFnc, randfns);
+    addOrigFn(SaferandomFnc, randomfns);
+    addOrigFn(SaferandFnc, randfns);
     addOrigFn(SafemallocFnc, mallocfns);
     addOrigFn(SafecallocFnc, callocfns);
     addOrigFn(SafereallocFnc, reallocfns);

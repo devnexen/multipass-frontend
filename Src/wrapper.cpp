@@ -20,11 +20,11 @@ void free(void *ptr) {
 }
 
 int rand(void) {
-    return safe_rand_i();
+    return safe_rand();
 }
 
 long random(void) {
-    return safe_rand_l();
+    return safe_random();
 }
 
 void srand(unsigned seed) {
@@ -52,7 +52,7 @@ void bzero(void *a, size_t l) {
 }
 
 void *memmem(const void *h, size_t hl, const void *bh, size_t bhl) {
-    return safe_mem(h, hl, bh, bhl);
+    return safe_memmem(h, hl, bh, bhl);
 }
 
 char *strncpy(char *dst, const char *src, size_t len) {

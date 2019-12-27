@@ -18,8 +18,8 @@ int main(int argc, char **argv) {
     void *ptr;
     safe_bzero(p, sizeof(p));
     testCond("safe_bzero", p[0] == 0);
-    ret = safe_random(buf, sizeof(buf));
-    testCond("safe_random", ret == 0);
+    ret = safe_getrandom(buf, sizeof(buf));
+    testCond("safe_getrandom", ret == 0);
     ret = safe_bcmp("a", "a", 1);
     testCond("safe_bcmp", ret == 0);
     ret = safe_bcmp("a", "b", 1);
@@ -29,10 +29,10 @@ int main(int argc, char **argv) {
     ret = safe_alloc(&ptr, 4096, 16);
     testCond("safe_alloc", ret == 0);
     safe_free(ptr);
-    ret = (safe_mem("ab", 2, "cd", 2) == nullptr);
-    testCond("safe_mem", ret == 1);
-    ret = (safe_mem("abcd", 4, "cd", 2) != nullptr);
-    testCond("safe_mem", ret == 1);
+    ret = (safe_memmem("ab", 2, "cd", 2) == nullptr);
+    testCond("safe_memmem", ret == 1);
+    ret = (safe_memmem("abcd", 4, "cd", 2) != nullptr);
+    testCond("safe_memmem", ret == 1);
     safe_memset(buf, '1', sizeof(buf) - 1);
     testCond("safe_memset", buf[0] == '1');
     safe_strcpy(p, "abcdefeghijklmnopq", 3);

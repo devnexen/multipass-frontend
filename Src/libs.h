@@ -44,8 +44,8 @@ static struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 void safe_bzero(void *, size_t);
 void *safe_memset(void *, int, size_t);
 int safe_bcmp(const void *, const void *, size_t);
-void *safe_mem(const void *, size_t, const void *, size_t);
-int safe_random(void *, size_t);
+void *safe_memmem(const void *, size_t, const void *, size_t);
+int safe_getrandom(void *, size_t);
 int safe_proc_maps(pid_t);
 int safe_alloc(void **, size_t, size_t);
 void safe_free(void *);
@@ -56,8 +56,8 @@ char *safe_strcat(char *, const char *, size_t);
 void *safe_malloc(size_t);
 void *safe_calloc(size_t, size_t);
 void *safe_realloc(void *, size_t);
-long safe_rand_l(void);
-int safe_rand_i(void);
+long safe_random(void);
+int safe_rand(void);
 #if defined(__cplusplus)
 }
 #endif

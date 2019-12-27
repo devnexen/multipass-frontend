@@ -15,6 +15,8 @@ MPASSFLAGS=-opt-level=$(OLEVEL) -code-level=$(CMODEL)
 ILIBS = -L objs -Wl,-rpath,objs -llibs
 PLDFLAGS=$(LDFLAGS) -Wl,-znodelete
 MAKE=make
+AFL_CC=afl-clang-fast
+AFL_CXX=afl-clang-fast++
 
 ifneq (,$(findstring $(PLATFORM), Darwin))
 VERSION=6.0.0
@@ -52,6 +54,7 @@ dist: testsLib
 
 testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
+	$(AFL_CC) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsAFLlib Tests/testsAFLLib.c $(ILIBS)
 
 exec: operands.o
 	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objs/libs.o -c Src/libs.cpp

@@ -43,7 +43,7 @@ int safe_bcmp(const void *a, const void *b, size_t l) {
     return delta;
 }
 
-void *safe_mem(const void *a, size_t al, const void *b, size_t bl) {
+void *safe_memmem(const void *a, size_t al, const void *b, size_t bl) {
     const unsigned char *ua = reinterpret_cast<const unsigned char *>(a);
     const unsigned char *ub = reinterpret_cast<const unsigned char *>(b);
 
@@ -67,7 +67,7 @@ void *safe_mem(const void *a, size_t al, const void *b, size_t bl) {
     return nullptr;
 }
 
-int safe_random(void *buf, size_t len) {
+int safe_getrandom(void *buf, size_t len) {
     safe_bzero(buf, len);
 #if defined(__linux__)
     ssize_t written = getrandom(buf, len, 0);
@@ -292,16 +292,16 @@ void *safe_realloc(void *o, size_t l) {
     return ptr;
 }
 
-long safe_rand_l(void) {
+long safe_random(void) {
     long ret;
-    safe_random(&ret, sizeof(ret));
+    safe_getrandom(&ret, sizeof(ret));
 
     return ret;
 }
 
-int safe_rand_i(void) {
+int safe_rand(void) {
     int ret;
-    safe_random(&ret, sizeof(ret));
+    safe_getrandom(&ret, sizeof(ret));
 
     return ret;
 }
