@@ -93,6 +93,8 @@ int main(int argc, char **argv) {
     printf("%c\n", p[0]);
     memcpy(p, "abc", 3);
     printf("%c\n", p[0]);
+    strncpy(p, "a", sizeof(p));
+    strncat(p, "bcdef", 5);
 
     return 0;
 }
