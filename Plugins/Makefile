@@ -8,6 +8,25 @@ CXX=`$(LLVMCFG) --bindir`/clang++
 OLEVEL=0
 OFLAGS=-g -O$(OLEVEL)
 
+
+ifneq (,$(findstring $(PLATFORM), Darwin))
+	$(warning Darwin is unsupported at the moment)
+	$(shell exit 1)
+
+.PHONY: clean
+
+clean:
+	$(shell exit 1)
+
+else
+
+all: libcustom-lib-pass.so
+
+libcustom-lib-pass.so: custom-lib-pass.cc
+	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(LDFLAGS)
+	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objslibs.o -c ../Src/libs.cpp
+	$(CXX) $(OFLAGS) -DUSE_MMAP=1 -Wall -fPIC -I Src -o objslibsmmap.o -c ../Src/libs.cpp
+
 .PHONY: clean
 
 clean:
@@ -15,14 +34,4 @@ clean:
 	rm -f lib*.so
 	rm -f lib*.a
 	rm -f objslibs*.o
-
-ifneq (,$(findstring $(PLATFORM), Darwin))
-	$(warning Darwin is unsupported at the moment)
-	$(shell exit 1)
-else
-
-libcustom-lib-pass.so: custom-lib-pass.cc
-	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(LDFLAGS)
-	$(CXX) $(OFLAGS) -Wall -fPIC -I Src -o objslibs.o -c ../Src/libs.cpp
-	$(CXX) $(OFLAGS) -DUSE_MMAP=1 -Wall -fPIC -I Src -o objslibsmmap.o -c ../Src/libs.cpp
 endif
