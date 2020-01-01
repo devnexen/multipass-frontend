@@ -214,12 +214,16 @@ int safe_proc_maps(pid_t pid) {
     return ret;
 }
 
+#if defined(USE_MMAP)
+static size_t alloc_sz(size_t l) { return ((l) + (4095)) / 4096; }
+#endif
+
 int safe_alloc(void **ptr, size_t a, size_t l) {
     if (!ptr)
         return -1;
     errno = 0;
 #if defined(USE_MMAP)
-    size_t tl = cl + szl + l;
+    size_t tl = (1 + alloc_sz(l + 8)) * 4096;
     int mflags = MAP_SHARED | MAP_ANON;
 #if defined(__FreeBSD__)
     mflags |= MAP_ALIGNED(12);
@@ -259,7 +263,7 @@ void safe_free(void *ptr) {
     if (readc != canary)
         errno = EINVAL;
     safe_memset(p, CLOBBER, szl);
-    munmap(p, szl + cl + l);
+    munmap(p, ((1 + alloc_sz(szl + 8)) * 4096));
 #else
     init_libc();
     ofree(ptr);
