@@ -3,6 +3,7 @@
 extern "C" {
 
 const int CLOBBER = 0xdead;
+struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 
 #if !defined(USE_MMAP)
 static void (*ofree)(void *) = nullptr;
@@ -167,6 +168,43 @@ int safe_proc_maps(pid_t pid) {
         ret = 0;
         munmap(b, len);
     }
+#elif defined(__APPLE__)
+    struct vm_region_submap_info_64 map;
+    mach_msg_type_number_t cnt = VM_REGION_SUBMAP_INFO_COUNT_64;
+    vm_address_t addr = 0;
+    vm_size_t size = 0;
+    natural_t depth = 0;
+
+    while (true) {
+        if (vm_region_recurse_64(mach_task_self(), &addr, &size, &depth,
+                                 reinterpret_cast<vm_region_info_64_t>(&map),
+                                 &cnt) != KERN_SUCCESS)
+            break;
+        if (map.is_submap) {
+            depth++;
+        } else {
+            uintptr_t a = static_cast<uintptr_t>(addr);
+            uintptr_t b = a + size;
+            int64_t f = 0;
+            if (map.protection & VM_PROT_READ)
+                f |= VM_PROT_READ;
+            if (map.protection & VM_PROT_WRITE)
+                f |= VM_PROT_WRITE;
+            if (map.protection & VM_PROT_EXECUTE)
+                f |= VM_PROT_EXECUTE;
+            memcpy(&pmap[index].s, &a, sizeof(pmap[index].s));
+            memcpy(&pmap[index].e, &b, sizeof(pmap[index].e));
+            memcpy(&pmap[index].f, &f, sizeof(pmap[index].f));
+            memcpy(&pmap[index].sz, &size, sizeof(pmap[index].sz));
+            pmap[index].hgmp = 0;
+            index++;
+
+            addr += size;
+            size = 0;
+        }
+    }
+
+    ret = 0;
 #else
     (void)index;
     errno = ENOSYS;

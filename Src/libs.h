@@ -15,6 +15,9 @@
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/user.h>
+#elif defined(__APPLE__)
+#include <mach/mach_init.h>
+#include <mach/vm_map.h>
 #endif
 
 #if defined(__cplusplus)
@@ -39,7 +42,7 @@ const size_t szl = sizeof(size_t);
 const size_t cl = sizeof(canary);
 #endif
 
-static struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
+extern struct p_proc_map pmap[PROC_MAP_MAX];
 
 void safe_bzero(void *, size_t);
 void *safe_memset(void *, int, size_t);
