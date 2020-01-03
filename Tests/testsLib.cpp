@@ -42,11 +42,11 @@ int main(int argc, char **argv) {
     int index = 0;
 
     while (pmap[index].s != 0) {
-        fprintf(stderr, "%p-%p %" PRIu64 " - huge ? %d (%" PRIu64 ")\n",
+        fprintf(stderr, "%p-%p %" PRIu64 " - huge ? %d (%s)\n",
                 reinterpret_cast<void *>(pmap[index].s),
                 reinterpret_cast<void *>(pmap[index].e),
                 static_cast<int64_t>(pmap[index].sz), pmap[index].hgmp,
-                pmap[index].f);
+                pmap[index].fstr);
         ++index;
     }
 

@@ -31,7 +31,8 @@ struct p_proc_map {
     int hgmp;
     int __reserved;
     int64_t f;
-    char res[24];
+    char fstr[4];
+    char res[20];
 };
 
 const size_t PROC_MAP_MAX = 256;

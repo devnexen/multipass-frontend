@@ -112,12 +112,15 @@ int safe_proc_maps(pid_t pid) {
                 int64_t f = 0;
                 f |= static_cast<int>(flag[0]);
                 f |= static_cast<int>(flag[1]);
+                f |= static_cast<int>(flag[2]);
                 size_t tsz = (e - s);
                 memcpy(&pmap[index].s, &s, sizeof(s));
                 memcpy(&pmap[index].e, &e, sizeof(e));
                 memcpy(&pmap[index].f, &f, sizeof(f));
                 memcpy(&pmap[index].sz, &tsz, sizeof(tsz));
                 pmap[index].hgmp = (tsz >= HUGE_MAP_SZ);
+                memcpy(pmap[index].fstr, flag, 3);
+                pmap[index].fstr[3] = 0;
                 index++;
             } else {
                 break;
@@ -154,12 +157,25 @@ int safe_proc_maps(pid_t pid) {
                 break;
 
             int64_t f = 0;
-            if (e->kve_protection & KVME_PROT_READ)
+            if (e->kve_protection & KVME_PROT_READ) {
                 f |= KVME_PROT_READ;
-            if (e->kve_protection & KVME_PROT_WRITE)
+                pmap[index].fstr[0] = 'r';
+            } else {
+                pmap[index].fstr[0] = '-';
+            }
+            if (e->kve_protection & KVME_PROT_WRITE) {
                 f |= KVME_PROT_WRITE;
-            if (e->kve_protection & KVME_PROT_EXEC)
+                pmap[index].fstr[1] = 'w';
+            } else {
+                pmap[index].fstr[1] = '-';
+            }
+            if (e->kve_protection & KVME_PROT_EXEC) {
                 f |= KVME_PROT_EXEC;
+                pmap[index].fstr[2] = 'x';
+            } else {
+                pmap[index].fstr[2] = '-';
+            }
+            pmap[index].fstr[3] = 0;
             size_t tsz = (e->kve_end - e->kve_start);
             memcpy(&pmap[index].s, &e->kve_start, sizeof(pmap[index].s));
             memcpy(&pmap[index].e, &e->kve_end, sizeof(pmap[index].e));
@@ -192,12 +208,25 @@ int safe_proc_maps(pid_t pid) {
             uintptr_t a = static_cast<uintptr_t>(addr);
             uintptr_t b = a + size;
             int64_t f = 0;
-            if (map.protection & VM_PROT_READ)
+            if (map.protection & VM_PROT_READ) {
                 f |= VM_PROT_READ;
-            if (map.protection & VM_PROT_WRITE)
+                pmap[index].fstr[0] = 'r';
+            } else {
+                pmap[index].fstr[0] = '-';
+            }
+            if (map.protection & VM_PROT_WRITE) {
                 f |= VM_PROT_WRITE;
-            if (map.protection & VM_PROT_EXECUTE)
+                pmap[index].fstr[1] = 'w';
+            } else {
+                pmap[index].fstr[1] = '-';
+            }
+            if (map.protection & VM_PROT_EXECUTE) {
                 f |= VM_PROT_EXECUTE;
+                pmap[index].fstr[2] = 'x';
+            } else {
+                pmap[index].fstr[2] = '-';
+            }
+            pmap[index].fstr[3] = 0;
             memcpy(&pmap[index].s, &a, sizeof(pmap[index].s));
             memcpy(&pmap[index].e, &b, sizeof(pmap[index].e));
             memcpy(&pmap[index].f, &f, sizeof(pmap[index].f));
