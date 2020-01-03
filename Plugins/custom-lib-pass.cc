@@ -39,8 +39,8 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SafebcmpFt;
     Function *SafebzeroFnc;
     FunctionType *SafebzeroFt;
-    Function *SafememFnc;
-    FunctionType *SafememFt;
+    Function *SafememmemFnc;
+    FunctionType *SafememmemFt;
     Function *SaferandomFnc;
     FunctionType *SaferandomFt;
     Function *SaferandFnc;
@@ -185,7 +185,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
     const char *randomfns[] = {"random"};
     const char *randfns[] = {"rand"};
     const char *zerofns[] = {"bzero"};
-    const char *memfns[] = {"memmem"};
+    const char *memmemfns[] = {"memmem"};
     const char *memsetfns[] = {"memset"};
     const char *mallocfns[] = {"malloc"};
     const char *callocfns[] = {"calloc"};
@@ -203,7 +203,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
     True = ConstantInt::get(Int1Ty, true);
     vector<Type *> SafebcmpArgs(3);
     vector<Type *> SafebzeroArgs(2);
-    vector<Type *> SafememArgs(4);
+    vector<Type *> SafememmemArgs(4);
     vector<Type *> SaferandomArgs(0);
     vector<Type *> SaferandArgs(0);
     vector<Type *> SafemallocArgs(1);
@@ -218,10 +218,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafebcmpArgs[2] = Int64Ty;
     SafebzeroArgs[0] = VoidTy;
     SafebzeroArgs[1] = Int64Ty;
-    SafememArgs[0] = VoidTy;
-    SafememArgs[1] = Int64Ty;
-    SafememArgs[2] = VoidTy;
-    SafememArgs[3] = Int64Ty;
+    SafememmemArgs[0] = VoidTy;
+    SafememmemArgs[1] = Int64Ty;
+    SafememmemArgs[2] = VoidTy;
+    SafememmemArgs[3] = Int64Ty;
     SafemallocArgs[0] = Int64Ty;
     SafecallocArgs[0] = Int64Ty;
     SafecallocArgs[1] = Int64Ty;
@@ -244,15 +244,15 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafebzeroFt = FunctionType::get(Int32Ty, SafebzeroArgs, false);
     SafebzeroFnc = Function::Create(SafebzeroFt, Function::ExternalLinkage,
                                     "safe_bzero", M);
-    SafememFt = FunctionType::get(VoidTy, SafememArgs, false);
-    SafememFnc =
-        Function::Create(SafememFt, Function::ExternalLinkage, "safe_mem", M);
-    SaferandomFt = FunctionType::get(Int64Ty, SaferandArgs, false);
-    SaferandomFnc = Function::Create(SaferandFt, Function::ExternalLinkage,
-                                    "safe_random", M);
+    SafememmemFt = FunctionType::get(VoidTy, SafememmemArgs, false);
+    SafememmemFnc = Function::Create(SafememmemFt, Function::ExternalLinkage,
+                                     "safe_memmem", M);
+    SaferandomFt = FunctionType::get(Int64Ty, SaferandomArgs, false);
+    SaferandomFnc = Function::Create(SaferandomFt, Function::ExternalLinkage,
+                                     "safe_random", M);
     SaferandFt = FunctionType::get(Int32Ty, SaferandArgs, false);
-    SaferandFnc = Function::Create(SaferandFt, Function::ExternalLinkage,
-                                    "safe_rand", M);
+    SaferandFnc =
+        Function::Create(SaferandFt, Function::ExternalLinkage, "safe_rand", M);
     SafemallocFt = FunctionType::get(VoidTy, SafemallocArgs, false);
     SafemallocFnc = Function::Create(SafemallocFt, Function::ExternalLinkage,
                                      "safe_malloc", M);
@@ -287,7 +287,7 @@ bool CustomLibModPass::runOnModule(Module &M) {
 
     addOrigFn(SafebcmpFnc, cmpfns);
     addOrigFn(SafebzeroFnc, zerofns);
-    addOrigFn(SafememFnc, memfns);
+    addOrigFn(SafememmemFnc, memmemfns);
     addOrigFn(SaferandomFnc, randomfns);
     addOrigFn(SaferandFnc, randfns);
     addOrigFn(SafemallocFnc, mallocfns);

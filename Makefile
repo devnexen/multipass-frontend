@@ -49,7 +49,6 @@ endif
 .PHONY: clean
 
 dist: testsLib
-	$(MAKE) -C Plugins clean
 	$(MAKE) -C Plugins
 
 testsLib: exec
@@ -77,3 +76,4 @@ dirs:
 clean:
 	rm -rf bins
 	rm -rf objs
+	$(MAKE) -C Plugins clean
