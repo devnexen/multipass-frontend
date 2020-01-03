@@ -3,8 +3,14 @@
 extern "C" {
 
 const int CLOBBER = 0xdead;
-struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
+const size_t HUGE_MAP_SZ = 2 * 1024 * 1024;
+#if defined(USE_MMAP)
+const int32_t canary = 0x3aff5d;
+const size_t szl = sizeof(size_t);
+const size_t cl = sizeof(canary);
+#endif
 
+struct p_proc_map pmap[PROC_MAP_MAX] = {{0}};
 #if !defined(USE_MMAP)
 static void (*ofree)(void *) = nullptr;
 
