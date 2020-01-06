@@ -53,6 +53,8 @@ dist: testsLib
 
 testsLib: exec
 	$(CXX) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsLib Tests/testsLib.cpp $(ILIBS)
+	$(CC) $(OFLAGS) -Wall -fPIE -I Src -o objs/asmTestLib.S -S Tests/asmTestLib.c
+	$(CC) $(OFLAGS) -Wall -fPIE -I Src -o bins/asmTestLib Tests/asmTestLib.c $(ILIBS)
 	$(AFL_CC) $(OFLAGS) -Wall -fPIE -I Src -o bins/testsAFLlib Tests/testsAFLLib.c $(ILIBS)
 
 exec: operands.o

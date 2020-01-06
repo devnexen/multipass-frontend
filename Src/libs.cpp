@@ -250,7 +250,13 @@ int safe_proc_maps(pid_t pid) {
 }
 
 #if defined(USE_MMAP)
-static size_t alloc_sz(size_t l) { return ((l) + (4095)) / 4096; }
+static size_t page_sz(void) { return sysconf(_SC_PAGESIZE); }
+static size_t alloc_sz(size_t l) {
+    static size_t pgsz = 0ul;
+    if (pgsz == 0)
+        pgsz = page_sz();
+    return ((l) + (pgsz - 1)) / pgsz;
+}
 #endif
 
 int safe_alloc(void **ptr, size_t a, size_t l) {
