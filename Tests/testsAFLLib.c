@@ -5,8 +5,8 @@ static char p[16];
 static ssize_t r;
 
 void testWithSz(size_t sz) {
-	safe_strcpy(p, buf, sz);
-	safe_strcat(p, buf, sz);
+	safe_strncpy(p, buf, sz);
+	safe_strncat(p, buf, sz);
 	safe_memmem(p, sz, buf, r);
 	safe_bcmp(p, buf, sz);
 }

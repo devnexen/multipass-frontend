@@ -46,8 +46,10 @@ int safe_getrandom(void *, size_t);
 int safe_proc_maps(pid_t);
 int safe_alloc(void **, size_t, size_t);
 void safe_free(void *);
-char *safe_strcpy(char *, const char *, size_t);
-char *safe_strcat(char *, const char *, size_t);
+char *safe_strcpy(char *, const char *);
+char *safe_strcat(char *, const char *);
+char *safe_strncpy(char *, const char *, size_t);
+char *safe_strncat(char *, const char *, size_t);
 
 // Few wrappers
 void *safe_malloc(size_t);

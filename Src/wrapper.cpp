@@ -34,18 +34,18 @@ void *memmem(const void *h, size_t hl, const void *bh, size_t bhl) {
 }
 
 char *strcpy(char *dst, const char *src) {
-    return safe_strcpy(dst, src, strlen(src));
-}
-
-char *strncpy(char *dst, const char *src, size_t len) {
-    return safe_strcpy(dst, src, len);
+    return safe_strcpy(dst, src);
 }
 
 char *strcat(char *dst, const char *src) {
-    return safe_strcat(dst, src, strlen(src));
+    return safe_strcat(dst, src);
+}
+
+char *strncpy(char *dst, const char *src, size_t len) {
+    return safe_strncpy(dst, src, len);
 }
 
 char *strncat(char *dst, const char *src, size_t len) {
-    return safe_strcat(dst, src, len);
+    return safe_strncat(dst, src, len);
 }
 }

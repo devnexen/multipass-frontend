@@ -59,6 +59,10 @@ class CustomLibModPass : public ModulePass {
     FunctionType *SafestrcpyFt;
     Function *SafestrcatFnc;
     FunctionType *SafestrcatFt;
+    Function *SafestrncpyFnc;
+    FunctionType *SafestrncpyFt;
+    Function *SafestrncatFnc;
+    FunctionType *SafestrncatFt;
     IntegerType *Int1Ty;
     IntegerType *Int32Ty;
     IntegerType *Int64Ty;
@@ -191,6 +195,8 @@ bool CustomLibModPass::runOnModule(Module &M) {
     const char *callocfns[] = {"calloc"};
     const char *reallocfns[] = {"realloc"};
     const char *freefns[] = {"free"};
+    const char *strcpyfns[] = {"strcpy"};
+    const char *strcatfns[] = {"strcat"};
     const char *strncpyfns[] = {"strncpy"};
     const char *strncatfns[] = {"strncat"};
 
@@ -211,8 +217,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
     vector<Type *> SafereallocArgs(2);
     vector<Type *> SafefreeArgs(1);
     vector<Type *> SafememsetArgs(3);
-    vector<Type *> SafestrcpyArgs(3);
-    vector<Type *> SafestrcatArgs(3);
+    vector<Type *> SafestrcpyArgs(2);
+    vector<Type *> SafestrcatArgs(2);
+    vector<Type *> SafestrncpyArgs(3);
+    vector<Type *> SafestrncatArgs(3);
     SafebcmpArgs[0] = VoidTy;
     SafebcmpArgs[1] = VoidTy;
     SafebcmpArgs[2] = Int64Ty;
@@ -233,10 +241,14 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafememsetArgs[2] = Int64Ty;
     SafestrcpyArgs[0] = VoidTy;
     SafestrcpyArgs[1] = VoidTy;
-    SafestrcpyArgs[2] = Int64Ty;
     SafestrcatArgs[0] = VoidTy;
     SafestrcatArgs[1] = VoidTy;
-    SafestrcatArgs[2] = Int64Ty;
+    SafestrncpyArgs[0] = VoidTy;
+    SafestrncpyArgs[1] = VoidTy;
+    SafestrncpyArgs[2] = Int64Ty;
+    SafestrncatArgs[0] = VoidTy;
+    SafestrncatArgs[1] = VoidTy;
+    SafestrncatArgs[2] = Int64Ty;
 
     SafebcmpFt = FunctionType::get(Int32Ty, SafebcmpArgs, false);
     SafebcmpFnc =
@@ -276,6 +288,14 @@ bool CustomLibModPass::runOnModule(Module &M) {
     SafestrcatFt = FunctionType::get(VoidTy, SafestrcatArgs, false);
     SafestrcatFnc = Function::Create(SafestrcatFt, Function::ExternalLinkage,
                                      "safe_strcat", M);
+
+    SafestrncpyFt = FunctionType::get(VoidTy, SafestrncpyArgs, false);
+    SafestrncpyFnc = Function::Create(SafestrncpyFt, Function::ExternalLinkage,
+                                      "safe_strncpy", M);
+
+    SafestrncatFt = FunctionType::get(VoidTy, SafestrncatArgs, false);
+    SafestrncatFnc = Function::Create(SafestrncatFt, Function::ExternalLinkage,
+                                      "safe_strncat", M);
 #define addOrigFn(KeyFn, fns)                                                  \
     do {                                                                       \
         for (const auto &fn : fns) {                                           \
@@ -295,8 +315,10 @@ bool CustomLibModPass::runOnModule(Module &M) {
     addOrigFn(SafereallocFnc, reallocfns);
     addOrigFn(SafefreeFnc, freefns);
     addOrigFn(SafememsetFnc, memsetfns);
-    addOrigFn(SafestrcpyFnc, strncpyfns);
-    addOrigFn(SafestrcatFnc, strncatfns);
+    addOrigFn(SafestrcpyFnc, strcpyfns);
+    addOrigFn(SafestrcatFnc, strcatfns);
+    addOrigFn(SafestrncpyFnc, strncpyfns);
+    addOrigFn(SafestrncatFnc, strncatfns);
 
     for (auto &F : M) {
         for (auto &BB : F) {

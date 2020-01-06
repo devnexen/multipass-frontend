@@ -95,6 +95,10 @@ int main(int argc, char **argv) {
     printf("%c\n", p[0]);
     strncpy(p, "a", sizeof(p));
     strncat(p, "bcdef", 5);
+    printf("strn* API %s\n", p);
+    strcpy(p, "g");
+    strcat(p, "hur");
+    printf("str* API %s\n", p);
 
     return 0;
 }

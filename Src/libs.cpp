@@ -311,15 +311,23 @@ void safe_free(void *ptr) {
 #endif
 }
 
-char *safe_strcpy(char *dst, const char *src, size_t l) {
+char *safe_strcpy(char *dst, const char *src) {
+    return safe_strncpy(dst, src, strlen(src));
+}
+
+char *safe_strcat(char *dst, const char *src) {
+    return safe_strncat(dst, src, strlen(src));
+}
+
+char *safe_strncpy(char *dst, const char *src, size_t l) {
     int d = 0;
     char *udst = dst;
     const char *usrc = src;
 
-    if (!dst || !src)
+    if (!l || !dst || !src)
         return NULL;
 
-    while (--l > 0) {
+    while (l-- > 0) {
         if (!*usrc || !(*udst++ = *usrc++))
             break;
         ++d;
@@ -330,16 +338,16 @@ char *safe_strcpy(char *dst, const char *src, size_t l) {
     return dst;
 }
 
-char *safe_strcat(char *dst, const char *src, size_t l) {
+char *safe_strncat(char *dst, const char *src, size_t l) {
     char *udst = dst;
 
     if (l == 0)
         return dst;
 
-    while (udst && *udst && --l > 0)
+    while (udst && *udst && l-- > 0)
         ++udst;
 
-    (void)safe_strcpy(udst, src, l);
+    (void)safe_strncpy(udst, src, l);
     return dst;
 }
 
