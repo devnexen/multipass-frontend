@@ -344,7 +344,7 @@ char *safe_strncat(char *dst, const char *src, size_t l) {
     if (l == 0)
         return dst;
 
-    while (udst && *udst && l-- > 0)
+    while (udst && *udst)
         ++udst;
 
     (void)safe_strncpy(udst, src, l);
