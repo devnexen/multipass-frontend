@@ -23,8 +23,8 @@ all:
 else
 
 all: libcustom-lib-pass.so
-	$(CC) $(OFLAGS) -Wall -fPIC -o ../bins/testsPlugin ../Tests/testsPlugin.c -Xclang -load -Xclang ./$< objslibsmmap.o
-	$(CC) $(OFLAGS) -Wall -fPIC -o ../bins/testsPlugin-wo ../Tests/testsPlugin.c
+	$(CC) $(OFLAGS) -Wno-strncat-size -Wall -fPIC -o ../bins/testsPlugin ../Tests/testsPlugin.c -Xclang -load -Xclang ./$< objslibsmmap.o
+	$(CC) $(OFLAGS) -Wno-strncat-size -Wall -fPIC -o ../bins/testsPlugin-wo ../Tests/testsPlugin.c
 
 libcustom-lib-pass.so: custom-lib-pass.cc
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -std=c++14 -Wall -fPIC -I ../Src -shared -Wl,-soname,$@ -o $@ $< $(LDFLAGS)

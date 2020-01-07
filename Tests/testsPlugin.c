@@ -99,6 +99,15 @@ int main(int argc, char **argv) {
     strcpy(p, "g");
     strcat(p, "hur");
     printf("str* API %s\n", p);
+#if !defined(__linux__)
+    char cbuf[4];
+    strncpy(cbuf, "a", sizeof(cbuf));
+    strncat(cbuf, "bcdef", sizeof(cbuf));
+    printf("strn* API %s\n", cbuf);
+    strlcpy(cbuf, "a", sizeof(cbuf));
+    strlcat(cbuf, "bcdef", sizeof(cbuf));
+    printf("strl* API %s\n", cbuf);
+#endif
 
     return 0;
 }

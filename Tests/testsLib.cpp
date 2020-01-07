@@ -35,10 +35,10 @@ int main(int argc, char **argv) {
     testCond("safe_memmem", ret == 1);
     safe_memset(buf, '1', sizeof(buf) - 1);
     testCond("safe_memset", buf[0] == '1');
-    safe_strncpy(p, "abcdefeghijklmnopq", 3);
-    testCond("safe_strncpy", !strcmp(p, "abc"));
+    safe_strncpy(p, "abcdefeghijklmnopq", sizeof(p));
+    testCond("safe_strncpy", !strcmp(p, "abcdefeghi"));
     safe_strncat(p, "def", sizeof(p));
-    testCond("safe_strncat", !strcmp(p, "abcdef"));
+    testCond("safe_strncat", !strcmp(p, "abcdefeghi"));
     safe_strcpy(p, "g");
     testCond("safe_strcpy", !strcmp(p, "g"));
     safe_strcat(p, "hur");

@@ -316,7 +316,7 @@ char *safe_strcpy(char *dst, const char *src) {
 }
 
 char *safe_strcat(char *dst, const char *src) {
-    return safe_strncat(dst, src, strlen(src));
+    return safe_strncat(dst, src, strlen(src) + 1);
 }
 
 char *safe_strncpy(char *dst, const char *src, size_t l) {
@@ -344,8 +344,10 @@ char *safe_strncat(char *dst, const char *src, size_t l) {
     if (l == 0)
         return dst;
 
-    while (udst && *udst)
+    while (l > 0 && udst && *udst) {
         ++udst;
+	--l;
+    }
 
     (void)safe_strncpy(udst, src, l);
     return dst;
