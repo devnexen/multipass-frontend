@@ -108,6 +108,8 @@ int main(int argc, char **argv) {
     strlcat(cbuf, "bcdef", sizeof(cbuf));
     printf("strl* API %s\n", cbuf);
 #endif
+    char *res = strstr(p, "u");
+    printf("strstr %s\n", res);
 
     return 0;
 }
