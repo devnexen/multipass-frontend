@@ -346,11 +346,24 @@ char *safe_strncat(char *dst, const char *src, size_t l) {
 
     while (l > 0 && udst && *udst) {
         ++udst;
-	--l;
+        --l;
     }
 
     (void)safe_strncpy(udst, src, l);
     return dst;
+}
+
+char *safe_strstr(const char *haystack, const char *needle) {
+    const char *h = haystack;
+    const size_t nl = strlen(needle);
+
+    while (*h) {
+        if (safe_bcmp(h, needle, nl) == 0)
+            return const_cast<char *>(h);
+        ++h;
+    }
+
+    return nullptr;
 }
 
 void *safe_malloc(size_t l) {

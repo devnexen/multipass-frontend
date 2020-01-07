@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
     int ret = -1;
     char p[10];
     char buf[256];
+    char *str;
     void *ptr;
     safe_bzero(p, sizeof(p));
     testCond("safe_bzero", p[0] == 0);
@@ -43,6 +44,8 @@ int main(int argc, char **argv) {
     testCond("safe_strcpy", !strcmp(p, "g"));
     safe_strcat(p, "hur");
     testCond("safe_strcat", !strcmp(p, "ghur"));
+    str = safe_strstr(p, "u");
+    testCond("safe_strstr", !strcmp(str, "ur"));
     int index = 0;
 
     while (pmap[index].s != 0) {

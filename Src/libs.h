@@ -50,6 +50,7 @@ char *safe_strcpy(char *, const char *);
 char *safe_strcat(char *, const char *);
 char *safe_strncpy(char *, const char *, size_t);
 char *safe_strncat(char *, const char *, size_t);
+char *safe_strstr(const char *, const char *);
 
 // Few wrappers
 void *safe_malloc(size_t);
