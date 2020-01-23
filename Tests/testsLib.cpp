@@ -30,6 +30,9 @@ int main(int argc, char **argv) {
     ret = safe_alloc(&ptr, 4096, 16);
     testCond("safe_alloc", ret == 0);
     safe_free(ptr);
+    ret = safe_alloc(&ptr, 4096, 1<<21);
+    testCond("safe_alloc", ret == 0);
+    safe_free(ptr);
     ret = (safe_memmem("ab", 2, "cd", 2) == nullptr);
     testCond("safe_memmem", ret == 1);
     ret = (safe_memmem("abcd", 4, "cd", 2) != nullptr);

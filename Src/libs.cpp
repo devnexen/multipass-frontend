@@ -267,7 +267,10 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     size_t tl = (1 + alloc_sz(l + 8)) * 4096;
     int mflags = MAP_SHARED | MAP_ANON;
 #if defined(__FreeBSD__)
+    const static size_t hsz = 1<<21;
     mflags |= MAP_ALIGNED(12);
+    if (tl >= hsz && !(hsz % hsz))
+        mflags |= MAP_ALIGNED_SUPER;
 #endif
     *ptr = mmap(nullptr, tl, PROT_READ | PROT_WRITE, mflags, -1, 0);
     if (*ptr == MAP_FAILED) {
