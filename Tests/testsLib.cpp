@@ -13,7 +13,7 @@ void testCond(const char *name, bool cond) {
 
 int main(int argc, char **argv) {
     int ret = -1;
-    char p[10];
+    char p[12];
     char buf[256];
     char *str;
     void *ptr;
@@ -39,9 +39,9 @@ int main(int argc, char **argv) {
     testCond("safe_memmem", ret == 1);
     safe_memset(buf, '1', sizeof(buf) - 1);
     testCond("safe_memset", buf[0] == '1');
-    safe_strncpy(p, "abcdefeghijklmnopq", sizeof(p));
+    safe_strncpy(p, "abcdefeghijklmnopq", 10);
     testCond("safe_strncpy", !strcmp(p, "abcdefeghi"));
-    safe_strncat(p, "def", sizeof(p));
+    safe_strncat(p, "def", 10);
     testCond("safe_strncat", !strcmp(p, "abcdefeghi"));
     safe_strcpy(p, "g");
     testCond("safe_strcpy", !strcmp(p, "g"));

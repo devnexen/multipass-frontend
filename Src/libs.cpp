@@ -265,11 +265,12 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     errno = 0;
 #if defined(USE_MMAP)
     size_t tl = (1 + alloc_sz(l + 8)) * 4096;
+    const static size_t hsz = 1<<21;
+    bool ishp = (l >= hsz && !(l % hsz));
     int mflags = MAP_SHARED | MAP_ANON;
 #if defined(__FreeBSD__)
-    const static size_t hsz = 1<<21;
     mflags |= MAP_ALIGNED(12);
-    if (tl >= hsz && !(hsz % hsz))
+    if (ishp)
         mflags |= MAP_ALIGNED_SUPER;
 #endif
     *ptr = mmap(nullptr, tl, PROT_READ | PROT_WRITE, mflags, -1, 0);
@@ -283,6 +284,10 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     ::memcpy(p, &l, szl);
     p += szl;
     *ptr = p;
+#if defined(__linux__)
+    if (ishp)
+        madvise(*ptr, l, MADV_HUGEPAGE);
+#endif
     return 0;
 #else
     void *p;
