@@ -9,6 +9,16 @@ void *realloc(void *o, size_t l) { return safe_realloc(o, l); }
 
 void *calloc(size_t nm, size_t l) { return safe_calloc(nm, l); }
 
+int posix_memalign(void **ptr, size_t a, size_t l) {
+    return safe_alloc(ptr, a, l);
+}
+
+void *memalign(size_t a, size_t l) {
+    void *ptr;
+    safe_alloc(&ptr, a, l);
+    return ptr;
+}
+
 void free(void *ptr) { return safe_free(ptr); }
 
 int rand(void) { return safe_rand(); }
@@ -33,13 +43,9 @@ void *memmem(const void *h, size_t hl, const void *bh, size_t bhl) {
     return safe_memmem(h, hl, bh, bhl);
 }
 
-char *strcpy(char *dst, const char *src) {
-    return safe_strcpy(dst, src);
-}
+char *strcpy(char *dst, const char *src) { return safe_strcpy(dst, src); }
 
-char *strcat(char *dst, const char *src) {
-    return safe_strcat(dst, src);
-}
+char *strcat(char *dst, const char *src) { return safe_strcat(dst, src); }
 
 char *strncpy(char *dst, const char *src, size_t len) {
     return safe_strncpy(dst, src, len);

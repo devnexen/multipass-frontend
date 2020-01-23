@@ -265,7 +265,7 @@ int safe_alloc(void **ptr, size_t a, size_t l) {
     errno = 0;
 #if defined(USE_MMAP)
     size_t tl = (1 + alloc_sz(l + 8)) * 4096;
-    const static size_t hsz = 1<<21;
+    const static size_t hsz = 1 << 21;
     bool ishp = (l >= hsz && !(l % hsz));
     int mflags = MAP_SHARED | MAP_ANON;
 #if defined(__FreeBSD__)
